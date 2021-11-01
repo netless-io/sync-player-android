@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">SyncPlayer</string>
+    <!-- 配置sdk app 参数-->
+    <string name="sdk_app_id">792/uaYcRG0I7ctP9A</string>
+    <string name="sdk_app_token">WHITEcGFydG5lcl9pZD1OZ3pwQWNBdlhiemJERW9NY0E0Z0V3RTUwbVZxM0NIbDJYV0Ymc2lnPWNiZWExOTMwNzc1NmQyNmU3N2U3M2Q0NWZjNTZiOGIwMWE2ZjU4NDI6YWRtaW5JZD0yMTYmcm9sZT1hZG1pbiZleHBpcmVfdGltZT0xNTg5ODMzNTQxJmFrPU5nenBBY0F2WGJ6YkRFb01jQTRnRXdFNTBtVnEzQ0hsMlhXRiZjcmVhdGVfdGltZT0xNTU4Mjc2NTg5Jm5vbmNlPTE1NTgyNzY1ODg4NDQwMA</string>
+    <!-- 配置有效room参数方便测试 -->
+    <string name="room_uuid">7e7c8f007a4011eba97639a3a8d1dde1</string>
+    <string name="room_token">NETLESSROOM_YWs9M2R5WmdQcFlLcFlTdlQ1ZjRkOFBiNjNnY1RoZ3BDSDlwQXk3Jm5vbmNlPTE2MTQ1NzAyOTg2NzgwMCZyb2xlPTAmc2lnPWIzZjY1NzQ2ZDJhOWU5Y2FjZmI3MzVlMGI5YWRkMjFhY2I1NjkwZTBlMWE2MWZkMjQ0NGE2ZmI2MWJlNDBhODImdXVpZD03ZTdjOGYwMDdhNDAxMWViYTk3NjM5YTNhOGQxZGRlMQ</string>
+    <string name="play">play</string>
+    <string name="pause">pause</string>
+    <string name="reset">reset</string>
+</resources>
