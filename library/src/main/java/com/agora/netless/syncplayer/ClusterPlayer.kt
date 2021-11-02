@@ -1,26 +1,29 @@
 package com.agora.netless.syncplayer
 
-class ClusterPlayer constructor(private val one: AtomPlayer, private val two: AtomPlayer) :
-    AtomPlayer() {
+import android.os.Handler
+import android.os.Looper
+
+class ClusterPlayer constructor(
+    private val one: AtomPlayer,
+    private val two: AtomPlayer,
+) : AtomPlayer() {
     private var players: Array<AtomPlayer> = arrayOf(one, two)
     private var pauseReason: Array<Boolean> = arrayOf(false, false)
 
     private var seeking = 0
     private var time: Long = 0
 
+    private val handler = Handler(Looper.getMainLooper())
+
     init {
-        val atomPlayerListener = LocalAtomPlayerListener()
+        val atomPlayerListener = LocalAtomPlayerListener(handler)
         players[0].atomPlayerListener = atomPlayerListener
         players[1].atomPlayerListener = atomPlayerListener
     }
 
-    private fun other(player: AtomPlayer): AtomPlayer {
-        return if (players[0] == player) players[1] else players[0]
-    }
+    private fun other(player: AtomPlayer) = if (players[0] == player) players[1] else players[0]
 
-    private fun index(player: AtomPlayer): Int {
-        return if (players[0] == player) 0 else 1
-    }
+    private fun index(player: AtomPlayer) = if (players[0] == player) 0 else 1
 
     override var playbackSpeed: Float = 1.0f
         set(value) {
@@ -83,8 +86,8 @@ class ClusterPlayer constructor(private val one: AtomPlayer, private val two: At
         pauseReason[index(atomPlayer)] = false
     }
 
-    inner class LocalAtomPlayerListener : AtomPlayerListener {
-        override fun onPlayerPhaseChange(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
+    inner class LocalAtomPlayerListener(handler: Handler) : AtomPlayerListener {
+        override fun onPhaseChange(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
             Log.d("onPlayerPhaseChange ${atomPlayer.name} $phaseChange")
             when (phaseChange) {
                 AtomPlayerPhase.Idle -> {; }

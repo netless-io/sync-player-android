@@ -17,14 +17,14 @@ import com.google.android.exoplayer2.util.Util
 class SimpleVideoPlayer @JvmOverloads constructor(
     context: Context,
     videoPath: String,
-    appName: String? = null
+    appName: String? = null,
 ) : AtomPlayer(), Player.EventListener {
     private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
     private var mediaSource: MediaSource? = null
     private var playerView: PlayerView? = null
-    private val dataSourceFactory = DefaultDataSourceFactory(
+    private var dataSourceFactory = DefaultDataSourceFactory(
         context,
-        if (appName != null) Util.getUserAgent(context, appName) else null
+        appName?.let { Util.getUserAgent(context, it) }
     )
     private val handler = Handler(Looper.getMainLooper())
     private var currentState = Player.STATE_IDLE
@@ -42,39 +42,24 @@ class SimpleVideoPlayer @JvmOverloads constructor(
      * @param playerView 视图实例
      */
     override fun setPlayerView(playerView: View) {
-        if (playerView is PlayerView) {
-            this.playerView = playerView
-            this.playerView!!.requestFocus()
-            this.playerView!!.player = exoPlayer
+        if (playerView !is PlayerView) {
+            throw IllegalArgumentException("view must be type of PlayerView")
         }
+        this.playerView = playerView
+        this.playerView!!.requestFocus()
+        this.playerView!!.player = exoPlayer
     }
 
-    /**
-     * 设置播放链接
-     *
-     * @param path 播放链接
-     */
     private fun setVideoPath(path: String) {
         setVideoURI(Uri.parse(path))
     }
 
-    /**
-     * 设置播放 Uri
-     *
-     * @param uri 播放链接对应的 Uri
-     */
     private fun setVideoURI(uri: Uri) {
         mediaSource = createMediaSource(uri)
         atomPlayerPhase = AtomPlayerPhase.Buffering
         exoPlayer.prepare(mediaSource!!)
     }
 
-    /**
-     * 由 nativePlayer 进行主动 seek，然后在 seek 完成后，再调用 [PlayerSyncManager] 同步
-     *
-     * @param time 跳转时间戳
-     * @param unit 时间戳单位
-     */
     override fun seek(timeMs: Long) {
         exoPlayer.seekTo(timeMs)
     }
@@ -93,7 +78,6 @@ class SimpleVideoPlayer @JvmOverloads constructor(
                 return@post
             }
             exoPlayer.playWhenReady = true
-
             Log.d("play $name isPlaying $isPlaying")
         }
     }
@@ -104,7 +88,6 @@ class SimpleVideoPlayer @JvmOverloads constructor(
                 return@post
             }
             exoPlayer.playWhenReady = false
-
             Log.d("pause $name isPlaying $isPlaying")
         }
     }
@@ -130,18 +113,15 @@ class SimpleVideoPlayer @JvmOverloads constructor(
         Log.d("$name onPlayerState $isPlaying $playbackState")
         currentState = playbackState
         when (playbackState) {
-            Player.STATE_IDLE -> {
-            }
+            Player.STATE_IDLE -> {; }
             Player.STATE_BUFFERING -> {
                 updatePlayerPhase(AtomPlayerPhase.Buffering)
             }
             Player.STATE_READY -> {
                 updatePlayerPhase(if (isPlaying) AtomPlayerPhase.Playing else AtomPlayerPhase.Pause)
             }
-            Player.STATE_ENDED -> {
-            }
-            else -> {
-            }
+            Player.STATE_ENDED -> {; }
+            else -> {; }
         }
     }
 

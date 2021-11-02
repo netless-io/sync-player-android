@@ -11,7 +11,7 @@ abstract class AtomPlayer {
 
     var atomPlayerListener: AtomPlayerListener? = null
 
-    var atomPlayerPhase: AtomPlayerPhase = AtomPlayerPhase.Idle
+    var atomPlayerPhase = AtomPlayerPhase.Idle
 
     open val isPlaying: Boolean = false
 
@@ -56,13 +56,13 @@ abstract class AtomPlayer {
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
         if (newPhase != atomPlayerPhase) {
             atomPlayerPhase = newPhase
-            atomPlayerListener?.onPlayerPhaseChange(this, atomPlayerPhase)
+            atomPlayerListener?.onPhaseChange(this, atomPlayerPhase)
         }
     }
 }
 
 interface AtomPlayerListener {
-    fun onPlayerPhaseChange(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {}
+    fun onPhaseChange(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {}
 
     fun onSeekTo(atomPlayer: AtomPlayer, timeMs: Long) {}
 }

@@ -5,8 +5,6 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -23,15 +21,14 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
     appName: String? = null
 ) : AtomPlayer(), Player.EventListener {
 
-    private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
-    private var mediaSource: MediaSource? = null
-    private var playerView: PlayerView? = null
     private val dataSourceFactory = DefaultDataSourceFactory(
         context,
-        if (appName != null) Util.getUserAgent(context, appName) else null
+        appName?.let { Util.getUserAgent(context, it) }
     )
-    private val handler: Handler = Handler(Looper.getMainLooper())
 
+    private var playerView: PlayerView? = null
+    private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
+    private var mediaSource: MediaSource? = null
     private var currentState = Player.STATE_IDLE
     private var currentPlaying: VideoItem? = null
     private var isRtcPlaying = false
@@ -44,7 +41,8 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
     }
 
     private fun observeLifecycle() {
-        (context as Activity).application.registerActivityLifecycleCallbacks(object :
+        val activity = context as Activity
+        activity.application.registerActivityLifecycleCallbacks(object :
             ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             }
@@ -89,47 +87,27 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
      * @param playerView 视图实例
      */
     override fun setPlayerView(playerView: View) {
-        if (playerView is PlayerView) {
-            this.playerView = playerView
-            this.playerView!!.player = exoPlayer
+        if (playerView !is PlayerView) {
+            throw IllegalArgumentException("view must be type of PlayerView")
         }
+        this.playerView = playerView
+        this.playerView!!.player = exoPlayer
     }
 
-    /**
-     * 设置播放链接
-     *
-     * @param path 播放链接
-     */
     private fun setVideoPath(path: String) {
         setVideoURI(Uri.parse(path))
     }
 
-    /**
-     * 设置播放 Uri
-     *
-     * @param uri 播放链接对应的 Uri
-     */
     private fun setVideoURI(uri: Uri) {
-        mediaSource = createMediaSource(uri)
         atomPlayerPhase = AtomPlayerPhase.Buffering
+        mediaSource = createMediaSource(uri)
         exoPlayer.prepare(mediaSource!!)
     }
 
-    /**
-     * 由 nativePlayer 进行主动 seek，然后在 seek 完成后，再调用 [PlayerSyncManager] 同步
-     *
-     * @param time 跳转时间戳
-     * @param unit 时间戳单位
-     */
     override fun seek(timeMs: Long) {
         checkAndPlayTime(timeMs, true)
     }
 
-    /**
-     * 获取当前是否正在播放
-     *
-     * @return true or false
-     */
     override val isPlaying: Boolean = isRtcPlaying && AtomPlayerPhase.Playing == atomPlayerPhase
 
     override var playbackSpeed = 1.0f
@@ -174,7 +152,7 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
     }
 
     private fun checkAndPlayTime(timeMs: Long, seek: Boolean = false) {
-        val recordItem = getRecordItem(timeMs)
+        val recordItem = findRecordItem(timeMs)
         if (recordItem != null) {
             if (recordItem == currentPlaying) {
                 if (seek) {
@@ -191,7 +169,7 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
         }
     }
 
-    private fun getRecordItem(timeMs: Long): VideoItem? {
+    private fun findRecordItem(timeMs: Long): VideoItem? {
         return videos.find { timeMs >= it.beginTime && timeMs < it.endTime }
     }
 
