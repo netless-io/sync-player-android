@@ -19,15 +19,14 @@ class SimpleVideoPlayer @JvmOverloads constructor(
     videoPath: String,
     appName: String? = null
 ) : AtomPlayer(), Player.EventListener {
-    private var exoPlayer: SimpleExoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
+    private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
     private var mediaSource: MediaSource? = null
     private var playerView: PlayerView? = null
     private val dataSourceFactory = DefaultDataSourceFactory(
         context,
         if (appName != null) Util.getUserAgent(context, appName) else null
     )
-    private val handler: Handler = Handler(Looper.getMainLooper())
-
+    private val handler = Handler(Looper.getMainLooper())
     private var currentState = Player.STATE_IDLE
 
     init {
@@ -55,7 +54,7 @@ class SimpleVideoPlayer @JvmOverloads constructor(
      *
      * @param path 播放链接
      */
-    fun setVideoPath(path: String) {
+    private fun setVideoPath(path: String) {
         setVideoURI(Uri.parse(path))
     }
 
@@ -64,7 +63,7 @@ class SimpleVideoPlayer @JvmOverloads constructor(
      *
      * @param uri 播放链接对应的 Uri
      */
-    fun setVideoURI(uri: Uri) {
+    private fun setVideoURI(uri: Uri) {
         mediaSource = createMediaSource(uri)
         atomPlayerPhase = AtomPlayerPhase.Buffering
         exoPlayer.prepare(mediaSource!!)
@@ -80,8 +79,7 @@ class SimpleVideoPlayer @JvmOverloads constructor(
         exoPlayer.seekTo(timeMs)
     }
 
-    override var isPlaying: Boolean = false
-        get() = exoPlayer.isPlaying
+    override val isPlaying: Boolean = exoPlayer.isPlaying
 
     override var playbackSpeed = 1.0f
         set(value) {

@@ -130,7 +130,7 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
      *
      * @return true or false
      */
-    override var isPlaying: Boolean = isRtcPlaying && AtomPlayerPhase.Playing == atomPlayerPhase
+    override val isPlaying: Boolean = isRtcPlaying && AtomPlayerPhase.Playing == atomPlayerPhase
 
     override var playbackSpeed = 1.0f
         set(value) {

@@ -4,8 +4,7 @@ import com.herewhite.sdk.Player
 import com.herewhite.sdk.domain.PlayerPhase
 
 class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
-    override var isPlaying: Boolean = false
-        get() = atomPlayerPhase == AtomPlayerPhase.Playing
+    override val isPlaying: Boolean = atomPlayerPhase == AtomPlayerPhase.Playing
 
     override var playbackSpeed = 1.0f
         set(value) {

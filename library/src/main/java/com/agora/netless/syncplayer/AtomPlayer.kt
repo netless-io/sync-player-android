@@ -13,7 +13,7 @@ abstract class AtomPlayer {
 
     var atomPlayerPhase: AtomPlayerPhase = AtomPlayerPhase.Idle
 
-    open var isPlaying: Boolean = false
+    open val isPlaying: Boolean = false
 
     open var playbackSpeed = 1.0f
 
