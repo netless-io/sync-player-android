@@ -19,7 +19,7 @@ abstract class AtomPlayer {
         listeners.remove(listener)
     }
 
-    fun notifyChanged(block: (listener: AtomPlayerListener) -> Unit) {
+    internal fun notifyChanged(block: (listener: AtomPlayerListener) -> Unit) {
         listeners.forEach(block)
     }
 
@@ -52,9 +52,7 @@ abstract class AtomPlayer {
 
     abstract fun duration(): Long
 
-    open fun setPlayerView(view: View) {
-
-    }
+    open fun setPlayerView(view: View) {}
 
     /**
      * mostly，it's used for debug
@@ -64,7 +62,7 @@ abstract class AtomPlayer {
     }
 
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
-        Log.d("[$name] updatePlayerPhase $playerPhase to $newPhase")
+        Log.d("[$name] updatePlayerPhase to $newPhase, from $playerPhase")
         if (newPhase != playerPhase) {
             playerPhase = newPhase
             notifyChanged {
@@ -77,7 +75,7 @@ abstract class AtomPlayer {
         get() = "{" +
                 "isPlaying: $isPlaying," +
                 "playerPhase: $playerPhase" +
-                "}";
+                "}"
 }
 
 interface AtomPlayerListener {

@@ -15,15 +15,14 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 
-class RtcVideoExoPlayer @JvmOverloads constructor(
+class RtcVideoExoPlayer constructor(
     private val context: Context,
     private val videos: List<VideoItem>,
-    appName: String? = null
-) : AtomPlayer(), Player.EventListener {
+) : AtomPlayer(), Player.Listener {
 
     private val dataSourceFactory = DefaultDataSourceFactory(
         context,
-        appName?.let { Util.getUserAgent(context, it) }
+        Util.getUserAgent(context, "SyncPlayer")
     )
 
     private var playerView: PlayerView? = null
@@ -84,13 +83,13 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
     /**
      * 设置播放视图
      *
-     * @param playerView 视图实例
+     * @param view 视图实例
      */
-    override fun setPlayerView(playerView: View) {
-        if (playerView !is PlayerView) {
+    override fun setPlayerView(view: View) {
+        if (view !is PlayerView) {
             throw IllegalArgumentException("view must be type of PlayerView")
         }
-        this.playerView = playerView
+        this.playerView = view
         this.playerView!!.player = exoPlayer
     }
 
@@ -149,11 +148,6 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
     override fun duration(): Long {
         return exoPlayer.duration
     }
-
-//    override fun syncTime(timeMs: Long) {
-//        Log.d("$name syncTime $timeMs")
-//        checkAndPlayTime(timeMs)
-//    }
 
     private fun checkAndPlayTime(timeMs: Long, seek: Boolean = false) {
         val recordItem = findRecordItem(timeMs)

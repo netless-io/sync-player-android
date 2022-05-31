@@ -54,8 +54,9 @@ class ClusterPlayer constructor(
     }
 
     override fun pause() {
-        players[0].pause()
-        players[1].pause()
+        players.forEach {
+            it.pause()
+        }
         targetPhase = AtomPlayerPhase.Paused
     }
 
@@ -72,7 +73,7 @@ class ClusterPlayer constructor(
     }
 
     private fun isSeeking(): Boolean {
-        return seeking != 0;
+        return seeking != 0
     }
 
     override fun getPhase(): AtomPlayerPhase {
@@ -105,7 +106,7 @@ class ClusterPlayer constructor(
 
             if (!isSeeking()) {
                 if (this@ClusterPlayer.position < position) {
-                    this@ClusterPlayer.position = position;
+                    this@ClusterPlayer.position = position
                     notifyChanged {
                         it.onPositionChanged(this@ClusterPlayer, this@ClusterPlayer.position)
                     }
@@ -166,7 +167,7 @@ class ClusterPlayer constructor(
         }
 
         override fun onSeekTo(atomPlayer: AtomPlayer, timeMs: Long) {
-            seeking--
+            if (seeking > 0) seeking--
             if (seeking == 0) {
                 notifyChanged {
                     it.onSeekTo(this@ClusterPlayer, timeMs = timeMs)

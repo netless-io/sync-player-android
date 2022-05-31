@@ -9,15 +9,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.agora.netless.syncplayer.misc.Constant;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 
 public class VideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
-
-    private SeekBar seekBar;
     private FrameLayout playerContainer;
-    private View playButton;
-    private View pauseButton;
-    private View resetButton;
+    private SeekBar seekBar;
 
     private VideoPlayer videoPlayer;
     private boolean isSeeking;
@@ -31,8 +28,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void initData() {
-        videoPlayer = new VideoPlayer(this, "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/oceans.mp4");
-        // videoPlayer = new SimpleVideoPlayer(this, "https://flat-storage.oss-cn-hangzhou.aliyuncs.com/temp/BigBuckBunny.mp4");
+        videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
         videoPlayer.setPlayerName("videoPlayer");
         videoPlayer.setPlayerView(playerContainer);
 
@@ -60,14 +56,12 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private void initView() {
         playerContainer = findViewById(R.id.player_container);
-        seekBar = findViewById(R.id.player_seek_bar);
-        playButton = findViewById(R.id.button_play);
-        pauseButton = findViewById(R.id.button_pause);
-        resetButton = findViewById(R.id.button_reset);
 
-        playButton.setOnClickListener(this);
-        pauseButton.setOnClickListener(this);
-        resetButton.setOnClickListener(this);
+        findViewById(R.id.button_play).setOnClickListener(this);
+        findViewById(R.id.button_pause).setOnClickListener(this);
+        findViewById(R.id.button_reset).setOnClickListener(this);
+
+        seekBar = findViewById(R.id.player_seek_bar);
         seekBar.setOnSeekBarChangeListener(new SeekBarChangeAdapter() {
             private long targetProgress = -1;
 

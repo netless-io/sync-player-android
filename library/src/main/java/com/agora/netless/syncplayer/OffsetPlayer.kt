@@ -1,35 +1,40 @@
 package com.agora.netless.syncplayer
 
-class OffsetPlayer constructor(player: AtomPlayer, offset: Int) : AtomPlayer() {
+class OffsetPlayer constructor(
+    private val player: AtomPlayer,
+    private val offset: Long,
+) : AtomPlayer() {
     override fun setup() {
-        TODO("Not yet implemented")
+        player.setup()
     }
 
     override fun play() {
-        TODO("Not yet implemented")
+        player.play()
     }
 
     override fun pause() {
-        TODO("Not yet implemented")
+        player.pause()
     }
 
     override fun release() {
-        TODO("Not yet implemented")
+        player.release()
     }
 
     override fun seekTo(timeMs: Long) {
-        TODO("Not yet implemented")
+        if (timeMs < offset) {
+
+        }
     }
 
     override fun getPhase(): AtomPlayerPhase {
-        TODO("Not yet implemented")
+        return player.playerPhase
     }
 
     override fun currentPosition(): Long {
-        TODO("Not yet implemented")
+        return player.currentPosition() + offset
     }
 
     override fun duration(): Long {
-        TODO("Not yet implemented")
+        return player.duration() + offset
     }
 }

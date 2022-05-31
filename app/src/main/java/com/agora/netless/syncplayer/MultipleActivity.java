@@ -89,12 +89,8 @@ public class MultipleActivity extends AppCompatActivity implements PlayerListene
         setupPlayer();
         setupSeekBar();
 
-        findViewById(R.id.button_play).setOnClickListener(view -> {
-            play();
-        });
-        findViewById(R.id.button_pause).setOnClickListener(view -> {
-            pause();
-        });
+        findViewById(R.id.button_play).setOnClickListener(view -> play());
+        findViewById(R.id.button_pause).setOnClickListener(view -> pause());
         findViewById(R.id.button_reset).setOnClickListener(view -> {
             pause();
             seek(0f);
@@ -253,7 +249,6 @@ public class MultipleActivity extends AppCompatActivity implements PlayerListene
     @Override
     public void onScheduleTimeChanged(long time) {
         if (isPlayable()) {
-            // clusterPlayer.syncTime(time);
         }
     }
 

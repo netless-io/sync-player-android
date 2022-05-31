@@ -13,7 +13,7 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
         }
 
     override fun setup() {
-        TODO("Not yet implemented")
+
     }
 
     override fun play() {

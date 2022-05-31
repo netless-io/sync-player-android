@@ -27,7 +27,7 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
     fun showBuffering(loading: Boolean) {
-        loadingBar.visibility = if (loading) VISIBLE else GONE;
+        loadingBar.visibility = if (loading) VISIBLE else GONE
     }
 
     fun setPosition(position: Long) {
@@ -41,6 +41,6 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
     fun getPlayer(): Player? {
-        return playerView.player;
+        return playerView.player
     }
 }

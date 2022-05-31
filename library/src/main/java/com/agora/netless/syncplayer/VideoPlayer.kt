@@ -31,7 +31,7 @@ class VideoPlayer constructor(
     private val handler = Handler(Looper.getMainLooper())
     private val positionNotifier = PositionNotifier(handler, this)
     private var targetPhase = AtomPlayerPhase.Idle
-    private var error: Exception? = null;
+    private var playerError: Exception? = null
 
     init {
         exoPlayer.addListener(this)
@@ -64,15 +64,15 @@ class VideoPlayer constructor(
 
     override fun setup() {
         targetPhase = AtomPlayerPhase.Ready
-        error = null
-        updatePlayerPhase(AtomPlayerPhase.Buffering)
         setVideoURI(Uri.parse(videoUrl))
+        updatePlayerPhase(AtomPlayerPhase.Buffering)
     }
 
     private fun setVideoURI(uri: Uri) {
         val mediaSource = createMediaSource(uri)
         exoPlayer.setMediaSources(listOf(mediaSource), true)
         exoPlayer.prepare()
+        playerError = null
     }
 
     private fun createMediaSource(uri: Uri): MediaSource {
@@ -96,7 +96,7 @@ class VideoPlayer constructor(
         get() = exoPlayer.isPlaying
 
     override val isError: Boolean
-        get() = error != null
+        get() = playerError != null
 
     override var playbackSpeed = 1.0f
         set(value) {
@@ -110,7 +110,6 @@ class VideoPlayer constructor(
             if (playerPhase == AtomPlayerPhase.Idle) {
                 setup()
             } else {
-                // real play
                 exoPlayer.playWhenReady = true
             }
             targetPhase = AtomPlayerPhase.Playing
@@ -138,7 +137,14 @@ class VideoPlayer constructor(
     }
 
     override fun duration(): Long {
-        return exoPlayer.duration
+        if (isInPlaybackState()) {
+            return exoPlayer.duration
+        }
+        return -1
+    }
+
+    private fun isInPlaybackState(): Boolean {
+        return playerPhase != AtomPlayerPhase.Idle
     }
 
     override fun onPlaybackStateChanged(state: Int) {
@@ -153,13 +159,11 @@ class VideoPlayer constructor(
             }
             Player.STATE_READY -> {
                 updatePlayerPhase(AtomPlayerPhase.Ready)
-                when (targetPhase) {
-                    AtomPlayerPhase.Paused, AtomPlayerPhase.Playing -> {
-                        exoPlayer.playWhenReady = targetPhase == AtomPlayerPhase.Playing
-                        updatePlayerPhase(if (targetPhase == AtomPlayerPhase.Playing) AtomPlayerPhase.Playing else AtomPlayerPhase.Paused)
-                    }
-                    AtomPlayerPhase.Ready -> {; }
-                    AtomPlayerPhase.Buffering, AtomPlayerPhase.Idle, AtomPlayerPhase.End -> {; }
+                if (targetPhase == AtomPlayerPhase.Playing ||
+                    targetPhase == AtomPlayerPhase.Paused
+                ) {
+                    exoPlayer.playWhenReady = targetPhase == AtomPlayerPhase.Playing
+                    updatePlayerPhase(targetPhase)
                 }
             }
             Player.STATE_ENDED -> {
@@ -174,18 +178,8 @@ class VideoPlayer constructor(
     }
 
     override fun onPlayerError(error: ExoPlaybackException) {
-        Log.d("[$name] onPlayerError ${error.message}, $debugInfo")
-        this.error = error;
-        when (error.type) {
-            ExoPlaybackException.TYPE_SOURCE -> {
-            }
-            ExoPlaybackException.TYPE_RENDERER -> {
-            }
-            ExoPlaybackException.TYPE_UNEXPECTED -> {
-            }
-            ExoPlaybackException.TYPE_REMOTE -> {
-            }
-        }
+        Log.d("[$name] onPlayerError ${error.type} ${error.message} , $debugInfo")
+        this.playerError = error
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {

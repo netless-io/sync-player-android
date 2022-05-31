@@ -21,7 +21,7 @@ internal class PositionNotifier constructor(
                         atomPlayer.currentPosition()
                     )
                 }
-                handler.postDelayed(this, intervalTime);
+                handler.postDelayed(this, intervalTime)
             }
         }
     }

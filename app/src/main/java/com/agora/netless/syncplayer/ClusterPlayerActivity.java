@@ -9,22 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.agora.netless.syncplayer.misc.Constant;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 
 public class ClusterPlayerActivity extends AppCompatActivity implements View.OnClickListener {
-    private View playButton;
-    private View pauseButton;
-    private View resetButton;
-    private SeekBar seekBar;
-
     private FrameLayout playerContainer1;
     private FrameLayout playerContainer2;
-
-    private VideoPlayer videoPlayer1;
-    private VideoPlayer videoPlayer2;
-
     private ClusterPlayer clusterPlayer;
 
+    private SeekBar seekBar;
     private boolean isSeeking;
 
     @Override
@@ -32,15 +25,15 @@ public class ClusterPlayerActivity extends AppCompatActivity implements View.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cluster_player);
         initView();
-        initData();
+        initPlayer();
     }
 
-    private void initData() {
-        videoPlayer1 = new VideoPlayer(this, "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/oceans.mp4");
+    private void initPlayer() {
+        VideoPlayer videoPlayer1 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
         videoPlayer1.setPlayerName("videoPlayer1");
         videoPlayer1.setPlayerView(playerContainer1);
 
-        videoPlayer2 = new VideoPlayer(this, "https://flat-storage.oss-cn-hangzhou.aliyuncs.com/temp/BigBuckBunny.mp4");
+        VideoPlayer videoPlayer2 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
         videoPlayer2.setPlayerName("videoPlayer2");
         videoPlayer2.setPlayerView(playerContainer2);
 
@@ -68,16 +61,14 @@ public class ClusterPlayerActivity extends AppCompatActivity implements View.OnC
     }
 
     private void initView() {
-        seekBar = findViewById(R.id.player_seek_bar);
-        playButton = findViewById(R.id.button_play);
-        pauseButton = findViewById(R.id.button_pause);
-        resetButton = findViewById(R.id.button_reset);
         playerContainer1 = findViewById(R.id.player_container_1);
         playerContainer2 = findViewById(R.id.player_container_2);
 
-        playButton.setOnClickListener(this);
-        pauseButton.setOnClickListener(this);
-        resetButton.setOnClickListener(this);
+        findViewById(R.id.button_play).setOnClickListener(this);
+        findViewById(R.id.button_pause).setOnClickListener(this);
+        findViewById(R.id.button_reset).setOnClickListener(this);
+
+        seekBar = findViewById(R.id.player_seek_bar);
         seekBar.setOnSeekBarChangeListener(new SeekBarChangeAdapter() {
             private long targetProgress = -1;
 
@@ -117,5 +108,11 @@ public class ClusterPlayerActivity extends AppCompatActivity implements View.OnC
                 clusterPlayer.stop();
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        clusterPlayer.release();
     }
 }
