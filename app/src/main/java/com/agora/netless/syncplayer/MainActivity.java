@@ -9,6 +9,8 @@ import android.webkit.WebView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.gson.Gson;
 import com.herewhite.sdk.Player;
 import com.herewhite.sdk.PlayerListener;
@@ -24,8 +26,6 @@ import com.herewhite.sdk.domain.SDKError;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * @author fenglibin
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements PlayerListener {
         setContentView(R.layout.activity_main);
 
         seekBar = findViewById(R.id.player_seek_bar);
-        playerView = findViewById(R.id.exo_video_view);
+        playerView = findViewById(R.id.player_view);
         playerView2 = findViewById(R.id.exo_video_view_2);
 
         whiteboardView = findViewById(R.id.white);
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements PlayerListener {
 
     private void seek(Long time, TimeUnit timeUnit) {
         if (isPlayable()) {
-            clusterPlayer.seek(TimeUnit.MILLISECONDS.convert(time, timeUnit));
+            clusterPlayer.seekTo(TimeUnit.MILLISECONDS.convert(time, timeUnit));
         }
     }
 
@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements PlayerListener {
     @Override
     public void onScheduleTimeChanged(long time) {
         if (isPlayable()) {
-            clusterPlayer.syncTime(time);
+            // clusterPlayer.syncTime(time);
         }
     }
 

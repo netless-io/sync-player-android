@@ -1,7 +1,39 @@
 package com.agora.netless.syncplayer
 
+import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
+
+/**
+ * used for notify position.
+ */
+internal class PositionNotifier constructor(
+    val handler: Handler,
+    val atomPlayer: AtomPlayer,
+    val intervalTime: Long = 100,
+) {
+    private val ticker = object : Runnable {
+        override fun run() {
+            if (atomPlayer.isPlaying) {
+                atomPlayer.notifyChanged {
+                    it.onPositionChanged(
+                        atomPlayer,
+                        atomPlayer.currentPosition()
+                    )
+                }
+                handler.postDelayed(this, intervalTime);
+            }
+        }
+    }
+
+    fun start() {
+        handler.post(ticker)
+    }
+
+    fun stop() {
+        handler.removeCallbacks(ticker)
+    }
+}
 
 /**
  * Wrapper around android.util.Log.

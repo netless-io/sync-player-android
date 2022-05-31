@@ -5,90 +5,110 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.FrameLayout
+import android.widget.FrameLayout.LayoutParams
+import com.agora.netless.syncplayer.ui.VideoPlayerView
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
-import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 
-class SimpleVideoPlayer @JvmOverloads constructor(
+class SimpleVideoPlayer constructor(
     context: Context,
-    videoPath: String,
-    appName: String? = null,
-) : AtomPlayer(), Player.EventListener {
+    private val url: String,
+) : AtomPlayer(), Player.Listener {
     private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
     private var mediaSource: MediaSource? = null
-    private var playerView: PlayerView? = null
+    private val containerView: VideoPlayerView by lazy {
+        VideoPlayerView(context)
+    }
     private var dataSourceFactory = DefaultDataSourceFactory(
         context,
-        appName?.let { Util.getUserAgent(context, it) }
+        Util.getUserAgent(context, "SyncPlayer")
     )
     private val handler = Handler(Looper.getMainLooper())
-    private var currentState = Player.STATE_IDLE
+    private val positionNotifier = PositionNotifier(handler, this)
 
     init {
         exoPlayer.addListener(this)
         exoPlayer.setAudioAttributes(AudioAttributes.DEFAULT, false)
         exoPlayer.playWhenReady = false
-        setVideoPath(videoPath)
     }
 
     /**
      * 设置播放视图
      *
-     * @param playerView 视图实例
+     * @param view 视图实例
      */
-    override fun setPlayerView(playerView: View) {
-        if (playerView !is PlayerView) {
+    override fun setPlayerView(view: View) {
+        if (view !is FrameLayout) {
             throw IllegalArgumentException("view must be type of PlayerView")
         }
-        this.playerView = playerView
-        this.playerView!!.requestFocus()
-        this.playerView!!.player = exoPlayer
-    }
+        val fillParent = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        view.addView(containerView, fillParent)
+        containerView.setPlayer(exoPlayer)
+        addPlayerListener(object : AtomPlayerListener {
+            override fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
+                containerView.showBuffering(playerPhase == AtomPlayerPhase.Buffering)
+            }
 
-    private fun setVideoPath(path: String) {
-        setVideoURI(Uri.parse(path))
+            override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
+                containerView.setPosition(position)
+            }
+        })
     }
 
     private fun setVideoURI(uri: Uri) {
+        updatePlayerPhase(AtomPlayerPhase.Buffering)
+
         mediaSource = createMediaSource(uri)
-        atomPlayerPhase = AtomPlayerPhase.Buffering
-        exoPlayer.prepare(mediaSource!!)
+        exoPlayer.setMediaSources(listOf(mediaSource!!), true)
+        exoPlayer.prepare()
     }
 
-    override fun seek(timeMs: Long) {
+    private fun createMediaSource(uri: Uri): MediaSource {
+        return when (val type = Util.inferContentType(uri)) {
+            C.TYPE_HLS -> HlsMediaSource
+                .Factory(dataSourceFactory)
+                .createMediaSource(MediaItem.fromUri(uri))
+            C.TYPE_OTHER -> ProgressiveMediaSource
+                .Factory(dataSourceFactory)
+                .createMediaSource(MediaItem.fromUri(uri))
+            else -> throw IllegalStateException("Unsupported type: $type")
+        }
+    }
+
+    override fun seekTo(timeMs: Long) {
+        Log.d("[$name] onSeekStart: $timeMs")
         exoPlayer.seekTo(timeMs)
     }
 
-    override val isPlaying: Boolean = exoPlayer.isPlaying
+    override val isPlaying: Boolean
+        get() = exoPlayer.isPlaying
 
     override var playbackSpeed = 1.0f
         set(value) {
             field = value
-            exoPlayer.setPlaybackParameters(PlaybackParameters(value))
+            exoPlayer.playbackParameters = PlaybackParameters(value)
         }
 
     override fun play() {
         handler.post {
-            if (isPlaying) {
-                return@post
+            Log.d("[$name] play called, $debugInfo")
+            if (playerPhase == AtomPlayerPhase.Idle) {
+                setVideoURI(Uri.parse(url))
             }
             exoPlayer.playWhenReady = true
-            Log.d("play $name isPlaying $isPlaying")
         }
     }
 
     override fun pause() {
         handler.post {
-            if (!isPlaying) {
-                return@post
-            }
+            Log.d("[$name] pause called: $debugInfo")
             exoPlayer.playWhenReady = false
-            Log.d("pause $name isPlaying $isPlaying")
         }
     }
 
@@ -98,10 +118,10 @@ class SimpleVideoPlayer @JvmOverloads constructor(
     }
 
     override fun getPhase(): AtomPlayerPhase {
-        return atomPlayerPhase
+        return playerPhase
     }
 
-    override fun currentTime(): Long {
+    override fun currentPosition(): Long {
         return exoPlayer.currentPosition
     }
 
@@ -109,10 +129,10 @@ class SimpleVideoPlayer @JvmOverloads constructor(
         return exoPlayer.duration
     }
 
-    override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-        Log.d("$name onPlayerState $isPlaying $playbackState")
-        currentState = playbackState
-        when (playbackState) {
+    override fun onPlaybackStateChanged(state: Int) {
+        Log.d("[$name] onPlaybackStateChanged $state, $debugInfo")
+
+        when (state) {
             Player.STATE_IDLE -> {; }
             Player.STATE_BUFFERING -> {
                 updatePlayerPhase(AtomPlayerPhase.Buffering)
@@ -120,13 +140,18 @@ class SimpleVideoPlayer @JvmOverloads constructor(
             Player.STATE_READY -> {
                 updatePlayerPhase(if (isPlaying) AtomPlayerPhase.Playing else AtomPlayerPhase.Pause)
             }
-            Player.STATE_ENDED -> {; }
-            else -> {; }
+            Player.STATE_ENDED -> {
+                updatePlayerPhase(AtomPlayerPhase.End)
+            }
         }
     }
 
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        // Log.d("[$name] onReadyChanged $playWhenReady, isPlaying $isPlaying")
+    }
+
     override fun onPlayerError(error: ExoPlaybackException) {
-        Log.d("$name onPlayerError ${error.message}")
+        Log.d("$name onPlayerError ${error.message}, $debugInfo")
         when (error.type) {
             ExoPlaybackException.TYPE_SOURCE -> {
             }
@@ -140,19 +165,29 @@ class SimpleVideoPlayer @JvmOverloads constructor(
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        Log.d("$name onIsPlayingChanged $isPlaying")
-    }
-
-    override fun onSeekProcessed() {
-        val pos = exoPlayer.currentPosition
-        atomPlayerListener?.onSeekTo(this, pos)
-    }
-
-    private fun createMediaSource(uri: Uri): MediaSource {
-        return when (val type = Util.inferContentType(uri)) {
-            C.TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
-            C.TYPE_OTHER -> ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
-            else -> throw IllegalStateException("Unsupported type: $type")
+        Log.d("[$name] onIsPlayingChanged $isPlaying, $debugInfo")
+        if (isPlaying) {
+            positionNotifier.start()
+        } else {
+            positionNotifier.stop()
         }
+    }
+
+    override fun onPositionDiscontinuity(
+        oldPosition: Player.PositionInfo,
+        newPosition: Player.PositionInfo,
+        reason: Int
+    ) {
+        if (reason == Player.DISCONTINUITY_REASON_SEEK) {
+            Log.d("[$name] onSeekEnd: ${exoPlayer.currentPosition}")
+            val pos = exoPlayer.currentPosition
+            notifyChanged {
+                it.onSeekTo(this, pos)
+            }
+        }
+    }
+
+    override fun onEvents(player: Player, events: Player.Events) {
+        // Log.d("$name onEvents $events")
     }
 }

@@ -4,7 +4,7 @@ import com.herewhite.sdk.Player
 import com.herewhite.sdk.domain.PlayerPhase
 
 class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
-    override val isPlaying: Boolean = atomPlayerPhase == AtomPlayerPhase.Playing
+    override val isPlaying: Boolean = playerPhase == AtomPlayerPhase.Playing
 
     override var playbackSpeed = 1.0f
         set(value) {
@@ -24,16 +24,18 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
         player.stop()
     }
 
-    override fun seek(timeMs: Long) {
+    override fun seekTo(timeMs: Long) {
         player.seekToScheduleTime(timeMs)
-        atomPlayerListener?.onSeekTo(this, timeMs = timeMs)
+        notifyChanged {
+            it.onSeekTo(this, timeMs = timeMs)
+        }
     }
 
     override fun getPhase(): AtomPlayerPhase {
-        return atomPlayerPhase
+        return playerPhase
     }
 
-    override fun currentTime(): Long {
+    override fun currentPosition(): Long {
         return player.playerTimeInfo.scheduleTime
     }
 

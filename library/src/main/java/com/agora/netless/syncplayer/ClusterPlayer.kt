@@ -11,14 +11,14 @@ class ClusterPlayer constructor(
     private var pauseReason: Array<Boolean> = arrayOf(false, false)
 
     private var seeking = 0
-    private var time: Long = 0
+    private var position: Long = 0
 
     private val handler = Handler(Looper.getMainLooper())
 
     init {
         val atomPlayerListener = LocalAtomPlayerListener(handler)
-        players[0].atomPlayerListener = atomPlayerListener
-        players[1].atomPlayerListener = atomPlayerListener
+        players[0].addPlayerListener(atomPlayerListener)
+        players[1].addPlayerListener(atomPlayerListener)
     }
 
     private fun other(player: AtomPlayer) = if (players[0] == player) players[1] else players[0]
@@ -49,30 +49,34 @@ class ClusterPlayer constructor(
         }
     }
 
-    override fun seek(timeMs: Long) {
+    override fun seekTo(timeMs: Long) {
         seeking = 2
-        players[0].seek(timeMs)
-        players[1].seek(timeMs)
+        players[0].seekTo(timeMs)
+        players[1].seekTo(timeMs)
+    }
+
+    private fun isSeeking(): Boolean {
+        return seeking != 0;
     }
 
     override fun getPhase(): AtomPlayerPhase {
-        return atomPlayerPhase
+        return playerPhase
     }
 
-    override fun currentTime(): Long {
-        return time
+    override fun currentPosition(): Long {
+        return position
     }
 
     override fun duration(): Long {
         return one.duration().coerceAtLeast(two.duration())
     }
 
-    override fun syncTime(timeMs: Long) {
-        time = timeMs
-        players.forEach {
-            it.syncTime(timeMs)
-        }
-    }
+//    override fun syncTime(timeMs: Long) {
+//        position = timeMs
+//        players.forEach {
+//            it.syncTime(timeMs)
+//        }
+//    }
 
     private fun pauseWhenBuffering(atomPlayer: AtomPlayer) {
         pauseReason[index(atomPlayer)] = true
@@ -87,8 +91,28 @@ class ClusterPlayer constructor(
     }
 
     inner class LocalAtomPlayerListener(handler: Handler) : AtomPlayerListener {
-        override fun onPhaseChange(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
-            Log.d("onPlayerPhaseChange ${atomPlayer.name} $phaseChange")
+        override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
+            Log.d("[$name] onPositionChanged ${atomPlayer.name} $position")
+
+            if (!isSeeking()) {
+                if (this@ClusterPlayer.position < position) {
+                    this@ClusterPlayer.position = position;
+                    notifyChanged {
+                        it.onPositionChanged(
+                            this@ClusterPlayer,
+                            this@ClusterPlayer.position
+                        )
+                    }
+                }
+                if (this@ClusterPlayer.position > position + 1000) {
+                    atomPlayer.seekTo(this@ClusterPlayer.position)
+                }
+            }
+        }
+
+        override fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
+            Log.d("[$name] onPhaseChanged ${atomPlayer.name} $phaseChange")
+
             when (phaseChange) {
                 AtomPlayerPhase.Idle -> {; }
                 AtomPlayerPhase.Pause -> {
@@ -121,7 +145,9 @@ class ClusterPlayer constructor(
         override fun onSeekTo(atomPlayer: AtomPlayer, timeMs: Long) {
             seeking--
             if (seeking == 0) {
-                atomPlayerListener?.onSeekTo(this@ClusterPlayer, timeMs = timeMs)
+                notifyChanged {
+                    it.onSeekTo(this@ClusterPlayer, timeMs = timeMs)
+                }
             }
         }
     }

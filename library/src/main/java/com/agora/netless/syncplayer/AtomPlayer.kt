@@ -1,17 +1,29 @@
 package com.agora.netless.syncplayer
 
 import android.view.View
-import kotlin.math.abs
+import java.util.concurrent.CopyOnWriteArraySet
 
 abstract class AtomPlayer {
+    private var listeners: CopyOnWriteArraySet<AtomPlayerListener> = CopyOnWriteArraySet()
+
     var name: String? = null
         get() {
             return field ?: "${this.javaClass}"
         }
 
-    var atomPlayerListener: AtomPlayerListener? = null
+    fun addPlayerListener(listener: AtomPlayerListener) {
+        listeners.add(listener)
+    }
 
-    var atomPlayerPhase = AtomPlayerPhase.Idle
+    fun removePlayerListener(listener: AtomPlayerListener) {
+        listeners.remove(listener)
+    }
+
+    fun notifyChanged(block: (listener: AtomPlayerListener) -> Unit) {
+        listeners.forEach(block)
+    }
+
+    var playerPhase = AtomPlayerPhase.Idle
 
     open val isPlaying: Boolean = false
 
@@ -23,24 +35,18 @@ abstract class AtomPlayer {
 
     open fun stop() {
         pause()
-        seek(0)
+        seekTo(0)
     }
 
     abstract fun release()
 
-    abstract fun seek(timeMs: Long)
+    abstract fun seekTo(timeMs: Long)
 
     abstract fun getPhase(): AtomPlayerPhase
 
-    abstract fun currentTime(): Long
+    abstract fun currentPosition(): Long
 
     abstract fun duration(): Long
-
-    open fun syncTime(timeMs: Long) {
-        if (abs(timeMs - currentTime()) > 1000 && duration() > timeMs) {
-            seek(timeMs)
-        }
-    }
 
     open fun setPlayerView(view: View) {
 
@@ -54,15 +60,25 @@ abstract class AtomPlayer {
     }
 
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
-        if (newPhase != atomPlayerPhase) {
-            atomPlayerPhase = newPhase
-            atomPlayerListener?.onPhaseChange(this, atomPlayerPhase)
+        if (newPhase != playerPhase) {
+            playerPhase = newPhase
+            notifyChanged {
+                it.onPhaseChanged(this, playerPhase)
+            }
         }
     }
+
+    internal val debugInfo: String
+        get() = "{" +
+                "isPlaying: $isPlaying," +
+                "playerPhase: $playerPhase" +
+                "}";
 }
 
 interface AtomPlayerListener {
-    fun onPhaseChange(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {}
+    fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {}
+
+    fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {}
 
     fun onSeekTo(atomPlayer: AtomPlayer, timeMs: Long) {}
 }

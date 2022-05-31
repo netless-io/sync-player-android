@@ -99,16 +99,16 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
     }
 
     private fun setVideoURI(uri: Uri) {
-        atomPlayerPhase = AtomPlayerPhase.Buffering
+        playerPhase = AtomPlayerPhase.Buffering
         mediaSource = createMediaSource(uri)
         exoPlayer.prepare(mediaSource!!)
     }
 
-    override fun seek(timeMs: Long) {
+    override fun seekTo(timeMs: Long) {
         checkAndPlayTime(timeMs, true)
     }
 
-    override val isPlaying: Boolean = isRtcPlaying && AtomPlayerPhase.Playing == atomPlayerPhase
+    override val isPlaying: Boolean = isRtcPlaying && AtomPlayerPhase.Playing == playerPhase
 
     override var playbackSpeed = 1.0f
         set(value) {
@@ -135,10 +135,10 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
     }
 
     override fun getPhase(): AtomPlayerPhase {
-        return atomPlayerPhase
+        return playerPhase
     }
 
-    override fun currentTime(): Long {
+    override fun currentPosition(): Long {
         return exoPlayer.currentPosition
     }
 
@@ -146,10 +146,10 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
         return exoPlayer.duration
     }
 
-    override fun syncTime(timeMs: Long) {
-        Log.d("$name syncTime $timeMs")
-        checkAndPlayTime(timeMs)
-    }
+//    override fun syncTime(timeMs: Long) {
+//        Log.d("$name syncTime $timeMs")
+//        checkAndPlayTime(timeMs)
+//    }
 
     private fun checkAndPlayTime(timeMs: Long, seek: Boolean = false) {
         val recordItem = findRecordItem(timeMs)
@@ -210,7 +210,9 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
 
     override fun onSeekProcessed() {
         val pos = exoPlayer.currentPosition
-        atomPlayerListener?.onSeekTo(this, pos)
+        notifyChanged {
+            it.onSeekTo(this, pos)
+        }
     }
 
     private fun createMediaSource(uri: Uri): MediaSource {
