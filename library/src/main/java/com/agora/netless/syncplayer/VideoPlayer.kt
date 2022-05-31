@@ -16,12 +16,11 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 
-class SimpleVideoPlayer constructor(
+class VideoPlayer constructor(
     context: Context,
-    private val url: String,
+    private val videoUrl: String,
 ) : AtomPlayer(), Player.Listener {
     private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
-    private var mediaSource: MediaSource? = null
     private val containerView: VideoPlayerView by lazy {
         VideoPlayerView(context)
     }
@@ -31,6 +30,8 @@ class SimpleVideoPlayer constructor(
     )
     private val handler = Handler(Looper.getMainLooper())
     private val positionNotifier = PositionNotifier(handler, this)
+    private var targetPhase = AtomPlayerPhase.Idle
+    private var error: Exception? = null;
 
     init {
         exoPlayer.addListener(this)
@@ -61,11 +62,16 @@ class SimpleVideoPlayer constructor(
         })
     }
 
-    private fun setVideoURI(uri: Uri) {
+    override fun setup() {
+        targetPhase = AtomPlayerPhase.Ready
+        error = null
         updatePlayerPhase(AtomPlayerPhase.Buffering)
+        setVideoURI(Uri.parse(videoUrl))
+    }
 
-        mediaSource = createMediaSource(uri)
-        exoPlayer.setMediaSources(listOf(mediaSource!!), true)
+    private fun setVideoURI(uri: Uri) {
+        val mediaSource = createMediaSource(uri)
+        exoPlayer.setMediaSources(listOf(mediaSource), true)
         exoPlayer.prepare()
     }
 
@@ -82,12 +88,15 @@ class SimpleVideoPlayer constructor(
     }
 
     override fun seekTo(timeMs: Long) {
-        Log.d("[$name] onSeekStart: $timeMs")
+        Log.d("[$name] seekTo call: $timeMs, $debugInfo")
         exoPlayer.seekTo(timeMs)
     }
 
     override val isPlaying: Boolean
         get() = exoPlayer.isPlaying
+
+    override val isError: Boolean
+        get() = error != null
 
     override var playbackSpeed = 1.0f
         set(value) {
@@ -99,9 +108,12 @@ class SimpleVideoPlayer constructor(
         handler.post {
             Log.d("[$name] play called, $debugInfo")
             if (playerPhase == AtomPlayerPhase.Idle) {
-                setVideoURI(Uri.parse(url))
+                setup()
+            } else {
+                // real play
+                exoPlayer.playWhenReady = true
             }
-            exoPlayer.playWhenReady = true
+            targetPhase = AtomPlayerPhase.Playing
         }
     }
 
@@ -109,12 +121,12 @@ class SimpleVideoPlayer constructor(
         handler.post {
             Log.d("[$name] pause called: $debugInfo")
             exoPlayer.playWhenReady = false
+            targetPhase = AtomPlayerPhase.Paused
         }
     }
 
     override fun release() {
         exoPlayer.release()
-        mediaSource = null
     }
 
     override fun getPhase(): AtomPlayerPhase {
@@ -133,12 +145,22 @@ class SimpleVideoPlayer constructor(
         Log.d("[$name] onPlaybackStateChanged $state, $debugInfo")
 
         when (state) {
-            Player.STATE_IDLE -> {; }
+            Player.STATE_IDLE -> {
+                updatePlayerPhase(AtomPlayerPhase.Idle)
+            }
             Player.STATE_BUFFERING -> {
                 updatePlayerPhase(AtomPlayerPhase.Buffering)
             }
             Player.STATE_READY -> {
-                updatePlayerPhase(if (isPlaying) AtomPlayerPhase.Playing else AtomPlayerPhase.Pause)
+                updatePlayerPhase(AtomPlayerPhase.Ready)
+                when (targetPhase) {
+                    AtomPlayerPhase.Paused, AtomPlayerPhase.Playing -> {
+                        exoPlayer.playWhenReady = targetPhase == AtomPlayerPhase.Playing
+                        updatePlayerPhase(if (targetPhase == AtomPlayerPhase.Playing) AtomPlayerPhase.Playing else AtomPlayerPhase.Paused)
+                    }
+                    AtomPlayerPhase.Ready -> {; }
+                    AtomPlayerPhase.Buffering, AtomPlayerPhase.Idle, AtomPlayerPhase.End -> {; }
+                }
             }
             Player.STATE_ENDED -> {
                 updatePlayerPhase(AtomPlayerPhase.End)
@@ -147,11 +169,13 @@ class SimpleVideoPlayer constructor(
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        // Log.d("[$name] onReadyChanged $playWhenReady, isPlaying $isPlaying")
+        Log.d("[$name] onReadyChanged $playWhenReady, $reason, $debugInfo")
+        // TODO 内部出发暂停
     }
 
     override fun onPlayerError(error: ExoPlaybackException) {
-        Log.d("$name onPlayerError ${error.message}, $debugInfo")
+        Log.d("[$name] onPlayerError ${error.message}, $debugInfo")
+        this.error = error;
         when (error.type) {
             ExoPlaybackException.TYPE_SOURCE -> {
             }

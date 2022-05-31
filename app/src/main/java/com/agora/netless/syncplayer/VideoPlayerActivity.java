@@ -19,7 +19,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     private View pauseButton;
     private View resetButton;
 
-    private SimpleVideoPlayer videoPlayer;
+    private VideoPlayer videoPlayer;
     private boolean isSeeking;
 
     @Override
@@ -31,8 +31,8 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void initData() {
-        // videoPlayer = new SimpleVideoPlayer(this, "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/oceans.mp4");
-        videoPlayer = new SimpleVideoPlayer(this, "https://flat-storage.oss-cn-hangzhou.aliyuncs.com/temp/BigBuckBunny.mp4");
+        videoPlayer = new VideoPlayer(this, "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/oceans.mp4");
+        // videoPlayer = new SimpleVideoPlayer(this, "https://flat-storage.oss-cn-hangzhou.aliyuncs.com/temp/BigBuckBunny.mp4");
         videoPlayer.setPlayerName("videoPlayer");
         videoPlayer.setPlayerView(playerContainer);
 

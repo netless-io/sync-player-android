@@ -20,8 +20,8 @@ public class ClusterPlayerActivity extends AppCompatActivity implements View.OnC
     private FrameLayout playerContainer1;
     private FrameLayout playerContainer2;
 
-    private SimpleVideoPlayer videoPlayer1;
-    private SimpleVideoPlayer videoPlayer2;
+    private VideoPlayer videoPlayer1;
+    private VideoPlayer videoPlayer2;
 
     private ClusterPlayer clusterPlayer;
 
@@ -36,11 +36,11 @@ public class ClusterPlayerActivity extends AppCompatActivity implements View.OnC
     }
 
     private void initData() {
-        videoPlayer1 = new SimpleVideoPlayer(this, "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/oceans.mp4");
+        videoPlayer1 = new VideoPlayer(this, "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/oceans.mp4");
         videoPlayer1.setPlayerName("videoPlayer1");
         videoPlayer1.setPlayerView(playerContainer1);
 
-        videoPlayer2 = new SimpleVideoPlayer(this, "https://flat-storage.oss-cn-hangzhou.aliyuncs.com/temp/BigBuckBunny.mp4");
+        videoPlayer2 = new VideoPlayer(this, "https://flat-storage.oss-cn-hangzhou.aliyuncs.com/temp/BigBuckBunny.mp4");
         videoPlayer2.setPlayerName("videoPlayer2");
         videoPlayer2.setPlayerView(playerContainer2);
 

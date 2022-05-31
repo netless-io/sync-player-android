@@ -27,7 +27,11 @@ abstract class AtomPlayer {
 
     open val isPlaying: Boolean = false
 
+    open val isError: Boolean = false
+
     open var playbackSpeed = 1.0f
+
+    internal abstract fun setup()
 
     abstract fun play()
 
@@ -60,6 +64,7 @@ abstract class AtomPlayer {
     }
 
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
+        Log.d("[$name] updatePlayerPhase $playerPhase to $newPhase")
         if (newPhase != playerPhase) {
             playerPhase = newPhase
             notifyChanged {
@@ -90,9 +95,14 @@ enum class AtomPlayerPhase {
     Idle,
 
     /**
+     * 视频准备就绪
+     */
+    Ready,
+
+    /**
      * 视频播放已暂停。
      */
-    Pause,
+    Paused,
 
     /**
      * 正在播放视频。

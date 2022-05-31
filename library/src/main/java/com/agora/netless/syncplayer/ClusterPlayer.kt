@@ -14,6 +14,7 @@ class ClusterPlayer constructor(
     private var position: Long = 0
 
     private val handler = Handler(Looper.getMainLooper())
+    private var targetPhase = AtomPlayerPhase.Idle
 
     init {
         val atomPlayerListener = LocalAtomPlayerListener(handler)
@@ -33,14 +34,29 @@ class ClusterPlayer constructor(
             }
         }
 
+    override fun setup() {
+        updatePlayerPhase(AtomPlayerPhase.Buffering)
+        players.forEach {
+            it.setup()
+        }
+        targetPhase = AtomPlayerPhase.Ready
+    }
+
     override fun play() {
-        players[0].play()
-        players[1].play()
+        if (playerPhase == AtomPlayerPhase.Idle) {
+            setup()
+        } else {
+            players.forEach {
+                it.play()
+            }
+        }
+        targetPhase = AtomPlayerPhase.Playing
     }
 
     override fun pause() {
         players[0].pause()
         players[1].pause()
+        targetPhase = AtomPlayerPhase.Paused
     }
 
     override fun release() {
@@ -71,13 +87,6 @@ class ClusterPlayer constructor(
         return one.duration().coerceAtLeast(two.duration())
     }
 
-//    override fun syncTime(timeMs: Long) {
-//        position = timeMs
-//        players.forEach {
-//            it.syncTime(timeMs)
-//        }
-//    }
-
     private fun pauseWhenBuffering(atomPlayer: AtomPlayer) {
         pauseReason[index(atomPlayer)] = true
     }
@@ -92,16 +101,13 @@ class ClusterPlayer constructor(
 
     inner class LocalAtomPlayerListener(handler: Handler) : AtomPlayerListener {
         override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
-            Log.d("[$name] onPositionChanged ${atomPlayer.name} $position")
+            // Log.d("[$name] onPositionChanged ${atomPlayer.name} $position")
 
             if (!isSeeking()) {
                 if (this@ClusterPlayer.position < position) {
                     this@ClusterPlayer.position = position;
                     notifyChanged {
-                        it.onPositionChanged(
-                            this@ClusterPlayer,
-                            this@ClusterPlayer.position
-                        )
+                        it.onPositionChanged(this@ClusterPlayer, this@ClusterPlayer.position)
                     }
                 }
                 if (this@ClusterPlayer.position > position + 1000) {
@@ -115,14 +121,27 @@ class ClusterPlayer constructor(
 
             when (phaseChange) {
                 AtomPlayerPhase.Idle -> {; }
-                AtomPlayerPhase.Pause -> {
+                AtomPlayerPhase.Ready -> {
+                    if (other(atomPlayer).playerPhase == AtomPlayerPhase.Ready) {
+                        updatePlayerPhase(AtomPlayerPhase.Ready)
+                        players.forEach {
+                            if (targetPhase == AtomPlayerPhase.Playing) {
+                                it.play()
+                            }
+                            if (targetPhase == AtomPlayerPhase.Paused) {
+                                it.pause()
+                            }
+                        }
+                    }
+                }
+                AtomPlayerPhase.Paused -> {
                     if (isPauseWhenBuffering(atomPlayer)) {
                         return
                     }
                     if (other(atomPlayer).isPlaying) {
                         other(atomPlayer).pause()
                     }
-                    updatePlayerPhase(AtomPlayerPhase.Pause)
+                    updatePlayerPhase(AtomPlayerPhase.Paused)
                 }
                 AtomPlayerPhase.Playing -> {
                     if (!other(atomPlayer).isPlaying) {
@@ -138,7 +157,11 @@ class ClusterPlayer constructor(
                     }
                     updatePlayerPhase(AtomPlayerPhase.Buffering)
                 }
-                else -> {; }
+                AtomPlayerPhase.End -> {
+                    if (other(atomPlayer).playerPhase == AtomPlayerPhase.End) {
+                        updatePlayerPhase(AtomPlayerPhase.End)
+                    }
+                }
             }
         }
 

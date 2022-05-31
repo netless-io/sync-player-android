@@ -1,4 +1,4 @@
-package com.agora.netless.syncplayer;
+package com.agora.netless.syncplayer.misc;
 
 /**
  * @author fenglibin

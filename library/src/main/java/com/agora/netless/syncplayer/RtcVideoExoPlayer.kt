@@ -116,6 +116,10 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
             exoPlayer.playbackParameters = PlaybackParameters(value)
         }
 
+    override fun setup() {
+        TODO("Not yet implemented")
+    }
+
     override fun play() {
         if (!isRtcPlaying) {
             isRtcPlaying = true
@@ -183,7 +187,7 @@ class RtcVideoExoPlayer @JvmOverloads constructor(
                 updatePlayerPhase(AtomPlayerPhase.Buffering)
             }
             Player.STATE_READY -> {
-                updatePlayerPhase(if (isRtcPlaying) AtomPlayerPhase.Playing else AtomPlayerPhase.Pause)
+                updatePlayerPhase(if (isRtcPlaying) AtomPlayerPhase.Playing else AtomPlayerPhase.Paused)
             }
             Player.STATE_ENDED -> {
 

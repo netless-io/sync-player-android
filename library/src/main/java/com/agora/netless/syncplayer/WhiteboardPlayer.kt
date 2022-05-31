@@ -12,6 +12,10 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
             player.playbackSpeed = value.toDouble()
         }
 
+    override fun setup() {
+        TODO("Not yet implemented")
+    }
+
     override fun play() {
         player.play()
     }
@@ -44,13 +48,17 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
     }
 
     fun updateWhitePlayerPhase(phase: PlayerPhase) {
-        if (phase == PlayerPhase.buffering || phase == PlayerPhase.waitingFirstFrame) {
-            updatePlayerPhase(AtomPlayerPhase.Buffering)
-        } else if (phase == PlayerPhase.pause || phase == PlayerPhase.playing) {
-            player.playbackSpeed = playbackSpeed.toDouble()
-            updatePlayerPhase(if (phase == PlayerPhase.pause) AtomPlayerPhase.Pause else AtomPlayerPhase.Playing)
-        } else {
-            updatePlayerPhase(AtomPlayerPhase.End)
+        when (phase) {
+            PlayerPhase.buffering, PlayerPhase.waitingFirstFrame -> {
+                updatePlayerPhase(AtomPlayerPhase.Buffering)
+            }
+            PlayerPhase.pause, PlayerPhase.playing -> {
+                player.playbackSpeed = playbackSpeed.toDouble()
+                updatePlayerPhase(if (phase == PlayerPhase.pause) AtomPlayerPhase.Paused else AtomPlayerPhase.Playing)
+            }
+            else -> {
+                updatePlayerPhase(AtomPlayerPhase.End)
+            }
         }
     }
 }
