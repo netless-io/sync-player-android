@@ -2,7 +2,6 @@ package com.agora.netless.syncplayer;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
@@ -11,28 +10,57 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.agora.netless.syncplayer.misc.Constant;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
+import com.herewhite.sdk.AbstractPlayerEventListener;
+import com.herewhite.sdk.Player;
+import com.herewhite.sdk.WhiteSdk;
+import com.herewhite.sdk.WhiteSdkConfiguration;
+import com.herewhite.sdk.WhiteboardView;
+import com.herewhite.sdk.domain.PlayerConfiguration;
+import com.herewhite.sdk.domain.Promise;
+import com.herewhite.sdk.domain.SDKError;
 
-public class VideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
-    private FrameLayout playerContainer;
+public class WhiteboardPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+    private WhiteboardView whiteboardView;
     private SeekBar seekBar;
 
-    private VideoPlayer videoPlayer;
+    private WhiteboardPlayer whiteboardPlayer;
     private boolean isSeeking;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_video_player);
+        setContentView(R.layout.activity_whiteboard_player);
         initView();
         initData();
     }
 
     private void initData() {
-        videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
-        videoPlayer.setPlayerName("videoPlayer");
-        videoPlayer.setPlayerView(playerContainer);
+        WhiteSdk whiteSdk = new WhiteSdk(whiteboardView, this, new WhiteSdkConfiguration(Constant.SDK_APP_ID, true));
 
-        videoPlayer.addPlayerListener(new AtomPlayerListener() {
+        PlayerConfiguration playerConfiguration = new PlayerConfiguration(Constant.ROOM_UUID, Constant.ROOM_TOKEN);
+        playerConfiguration.setDuration(120000L);
+
+        whiteSdk.createPlayer(playerConfiguration, new AbstractPlayerEventListener() {
+                },
+                new Promise<Player>() {
+                    @Override
+                    public void then(Player player) {
+                        enableBtn();
+                        initPlayer(player);
+                    }
+
+                    @Override
+                    public void catchEx(SDKError t) {
+
+                    }
+                });
+    }
+
+    private void initPlayer(Player player) {
+        whiteboardPlayer = new WhiteboardPlayer(player);
+        whiteboardPlayer.setPlayerName("whiteboardPlayer");
+
+        whiteboardPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -42,8 +70,8 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
 
             @Override
             public void onPhaseChanged(@NonNull AtomPlayer atomPlayer, @NonNull AtomPlayerPhase phase) {
-                if (phase == AtomPlayerPhase.Ready) {
-                    seekBar.setMax((int) atomPlayer.duration() * 2);
+                if (phase == AtomPlayerPhase.Playing) {
+                    seekBar.setMax((int) atomPlayer.duration());
                 }
             }
 
@@ -55,11 +83,12 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void initView() {
-        playerContainer = findViewById(R.id.player_container);
+        whiteboardView = findViewById(R.id.whiteboard_view);
 
         findViewById(R.id.button_play).setOnClickListener(this);
         findViewById(R.id.button_pause).setOnClickListener(this);
         findViewById(R.id.button_reset).setOnClickListener(this);
+        disableBtn();
 
         seekBar = findViewById(R.id.player_seek_bar);
         seekBar.setOnSeekBarChangeListener(new SeekBarChangeAdapter() {
@@ -82,23 +111,35 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    videoPlayer.seekTo(targetProgress);
+                    whiteboardPlayer.seekTo(targetProgress);
                 }
             }
         });
+    }
+
+    private void enableBtn() {
+        findViewById(R.id.button_play).setEnabled(true);
+        findViewById(R.id.button_pause).setEnabled(true);
+        findViewById(R.id.button_reset).setEnabled(true);
+    }
+
+    private void disableBtn() {
+        findViewById(R.id.button_play).setEnabled(false);
+        findViewById(R.id.button_pause).setEnabled(false);
+        findViewById(R.id.button_reset).setEnabled(false);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                videoPlayer.play();
+                whiteboardPlayer.play();
                 break;
             case R.id.button_pause:
-                videoPlayer.pause();
+                whiteboardPlayer.pause();
                 break;
             case R.id.button_reset:
-                videoPlayer.stop();
+                whiteboardPlayer.stop();
                 break;
         }
     }

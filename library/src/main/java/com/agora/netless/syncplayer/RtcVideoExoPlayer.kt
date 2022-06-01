@@ -116,7 +116,7 @@ class RtcVideoExoPlayer constructor(
         }
 
     override fun setup() {
-        TODO("Not yet implemented")
+
     }
 
     override fun play() {
@@ -135,10 +135,6 @@ class RtcVideoExoPlayer constructor(
 
     override fun release() {
         exoPlayer.release()
-    }
-
-    override fun getPhase(): AtomPlayerPhase {
-        return playerPhase
     }
 
     override fun currentPosition(): Long {

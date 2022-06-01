@@ -26,5 +26,13 @@
         <activity
             android:name=".ClusterPlayerActivity"
             android:exported="true" />
+
+        <activity
+            android:name=".WhiteboardPlayerActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".TriplePlayerActivity"
+            android:exported="true" />
     </application>
 </manifest>

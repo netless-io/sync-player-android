@@ -22,7 +22,9 @@ public class MainActivity extends AppCompatActivity {
 
     private List<UseCase> ALL_USE_CASE = Arrays.asList(
             new UseCase("VideoPlayer", "", VideoPlayerActivity.class),
-            new UseCase("ClusterPlayer", "", ClusterPlayerActivity.class)
+            new UseCase("WhiteboardPlayer", "", WhiteboardPlayerActivity.class),
+            new UseCase("ClusterPlayer", "", ClusterPlayerActivity.class),
+            new UseCase("TriplePlayer", "", TriplePlayerActivity.class)
     );
 
     @Override

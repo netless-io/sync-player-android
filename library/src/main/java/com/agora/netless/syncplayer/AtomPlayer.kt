@@ -1,15 +1,13 @@
 package com.agora.netless.syncplayer
 
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import java.util.concurrent.CopyOnWriteArraySet
 
 abstract class AtomPlayer {
-    private var listeners: CopyOnWriteArraySet<AtomPlayerListener> = CopyOnWriteArraySet()
-
-    var name: String? = null
-        get() {
-            return field ?: "${this.javaClass}"
-        }
+    private var listeners = CopyOnWriteArraySet<AtomPlayerListener>()
+    internal val handler = Handler(Looper.getMainLooper())
 
     fun addPlayerListener(listener: AtomPlayerListener) {
         listeners.add(listener)
@@ -20,12 +18,19 @@ abstract class AtomPlayer {
     }
 
     internal fun notifyChanged(block: (listener: AtomPlayerListener) -> Unit) {
-        listeners.forEach(block)
+        handler.post {
+            listeners.forEach(block)
+        }
     }
 
     var playerPhase = AtomPlayerPhase.Idle
 
+    internal var targetPhase: AtomPlayerPhase = AtomPlayerPhase.Idle
+
     open val isPlaying: Boolean = false
+
+    internal val isPreparing: Boolean
+        get() = playerPhase == AtomPlayerPhase.Idle && targetPhase == AtomPlayerPhase.Ready
 
     open val isError: Boolean = false
 
@@ -46,13 +51,16 @@ abstract class AtomPlayer {
 
     abstract fun seekTo(timeMs: Long)
 
-    abstract fun getPhase(): AtomPlayerPhase
-
     abstract fun currentPosition(): Long
 
     abstract fun duration(): Long
 
     open fun setPlayerView(view: View) {}
+
+    var name: String? = null
+        get() {
+            return field ?: "${this.javaClass}"
+        }
 
     /**
      * mostly，it's used for debug
@@ -63,10 +71,10 @@ abstract class AtomPlayer {
 
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
         Log.d("[$name] updatePlayerPhase to $newPhase, from $playerPhase")
-        if (newPhase != playerPhase) {
+        if (playerPhase != newPhase) {
             playerPhase = newPhase
             notifyChanged {
-                it.onPhaseChanged(this, playerPhase)
+                it.onPhaseChanged(this, newPhase)
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.agora.netless.syncplayer
 
 import android.os.Handler
-import android.os.Looper
 
 class ClusterPlayer constructor(
     private val one: AtomPlayer,
@@ -12,9 +11,7 @@ class ClusterPlayer constructor(
 
     private var seeking = 0
     private var position: Long = 0
-
-    private val handler = Handler(Looper.getMainLooper())
-    private var targetPhase = AtomPlayerPhase.Idle
+    private var targetPosition: Long = 0
 
     init {
         val atomPlayerListener = LocalAtomPlayerListener(handler)
@@ -26,7 +23,7 @@ class ClusterPlayer constructor(
 
     private fun index(player: AtomPlayer) = if (players[0] == player) 0 else 1
 
-    override var playbackSpeed: Float = 1.0f
+    override var playbackSpeed = 1.0f
         set(value) {
             field = value
             players.forEach {
@@ -70,14 +67,11 @@ class ClusterPlayer constructor(
         seeking = 2
         players[0].seekTo(timeMs)
         players[1].seekTo(timeMs)
+        targetPosition = timeMs;
     }
 
     private fun isSeeking(): Boolean {
         return seeking != 0
-    }
-
-    override fun getPhase(): AtomPlayerPhase {
-        return playerPhase
     }
 
     override fun currentPosition(): Long {
@@ -102,8 +96,6 @@ class ClusterPlayer constructor(
 
     inner class LocalAtomPlayerListener(handler: Handler) : AtomPlayerListener {
         override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
-            // Log.d("[$name] onPositionChanged ${atomPlayer.name} $position")
-
             if (!isSeeking()) {
                 if (this@ClusterPlayer.position < position) {
                     this@ClusterPlayer.position = position
@@ -169,6 +161,8 @@ class ClusterPlayer constructor(
         override fun onSeekTo(atomPlayer: AtomPlayer, timeMs: Long) {
             if (seeking > 0) seeking--
             if (seeking == 0) {
+                Log.d("[$name] onSeekTo ${atomPlayer.name} $timeMs")
+                position = targetPosition
                 notifyChanged {
                     it.onSeekTo(this@ClusterPlayer, timeMs = timeMs)
                 }

@@ -36,7 +36,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.8'
 
     // Agora
-    implementation 'com.github.netless-io:whiteboard-android:2.13.23'
+    implementation 'com.github.netless-io:whiteboard-android:ef15d5550602dd5526d2bd84e6ed42b8a2754d67'
 
     // Exoplayer
     def exoplayer_version = "2.14.1"

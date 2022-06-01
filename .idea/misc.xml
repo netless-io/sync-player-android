@@ -6,7 +6,9 @@
         <entry key="app/src/main/res/layout/activity_cluster_player.xml" value="0.19610507246376813" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.5192708333333333" />
         <entry key="app/src/main/res/layout/activity_mutiple.xml" value="0.19610507246376813" />
+        <entry key="app/src/main/res/layout/activity_triple_player.xml" value="0.19610507246376813" />
         <entry key="app/src/main/res/layout/activity_video_player.xml" value="0.19610507246376813" />
+        <entry key="app/src/main/res/layout/activity_whiteboard_player.xml" value="0.1" />
         <entry key="app/src/main/res/layout/item_usecase.xml" value="0.19610507246376813" />
         <entry key="library/src/main/res/layout/video_player_layout.xml" value="0.19610507246376813" />
       </map>

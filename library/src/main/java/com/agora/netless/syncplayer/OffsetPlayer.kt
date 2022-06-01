@@ -26,10 +26,6 @@ class OffsetPlayer constructor(
         }
     }
 
-    override fun getPhase(): AtomPlayerPhase {
-        return player.playerPhase
-    }
-
     override fun currentPosition(): Long {
         return player.currentPosition() + offset
     }

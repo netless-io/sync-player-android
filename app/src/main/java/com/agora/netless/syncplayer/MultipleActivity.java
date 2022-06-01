@@ -66,7 +66,6 @@ public class MultipleActivity extends AppCompatActivity implements PlayerListene
             if (mUserIsSeeking) {
                 return;
             }
-            // FIXME:正在 seek 时，progress 会被重置到旧的时间，只有 seek 完成，progress 才会恢复正确
             int progress = playerProgress();
             Log.v(TAG, "progress" + progress);
             seekBar.setProgress(progress);
@@ -156,6 +155,8 @@ public class MultipleActivity extends AppCompatActivity implements PlayerListene
         whiteSdk.createPlayer(playerConf, this, new Promise<Player>() {
             @Override
             public void then(Player player) {
+                enableBtn();
+
                 playbackPlayer = player;
 
                 whiteboardPlayer = new WhiteboardPlayer(player);
@@ -163,8 +164,6 @@ public class MultipleActivity extends AppCompatActivity implements PlayerListene
 
                 clusterPlayer = new ClusterPlayer(whiteboardPlayer, clusterVideoPlayer);
                 clusterPlayer.setPlayerName("clusterPlayer");
-
-                enableBtn();
             }
 
             @Override
@@ -222,7 +221,7 @@ public class MultipleActivity extends AppCompatActivity implements PlayerListene
 
     @Override
     public void onPhaseChanged(PlayerPhase phase) {
-        ((WhiteboardPlayer) whiteboardPlayer).updateWhitePlayerPhase(phase);
+//        ((WhiteboardPlayer) whiteboardPlayer).updateWhitePlayerPhase(phase);
     }
 
     @Override
