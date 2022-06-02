@@ -10,7 +10,7 @@ import android.util.Log
 internal class PositionNotifier constructor(
     val handler: Handler,
     val atomPlayer: AtomPlayer,
-    val intervalTime: Long = 100,
+    val intervalTime: Long = 500,
 ) {
     private val ticker = object : Runnable {
         override fun run() {
@@ -32,6 +32,35 @@ internal class PositionNotifier constructor(
 
     fun stop() {
         handler.removeCallbacks(ticker)
+    }
+}
+
+internal class FakePlayer {
+    var position = 0L
+    var lastPlay = 0L
+    var playing = false;
+
+    fun play() {
+        playing = true
+        lastPlay = System.currentTimeMillis();
+    }
+
+    fun pause() {
+        playing = false
+        position += System.currentTimeMillis() - lastPlay
+    }
+
+    fun seekTo(timeMs: Long) {
+        position = timeMs
+        lastPlay = System.currentTimeMillis()
+    }
+
+    fun currentPosition(): Long {
+        return if (playing) {
+            position + System.currentTimeMillis() - lastPlay
+        } else {
+            position
+        }
     }
 }
 

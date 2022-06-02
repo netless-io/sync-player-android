@@ -1,47 +1,72 @@
 package com.agora.netless.syncplayer
 
-import android.util.Range
+/**
+ * 选取一个播放器的多段
+ */
+class SegmentPlayer(
+    val atomPlayer: AtomPlayer,
+    segmentOptions: SegmentOptions,
+) : AtomPlayer() {
+    private var segIn: List<Segment> = segmentOptions.segment
+    private var segOut: MutableList<Segment> = ArrayList(segIn.size)
 
-class SegmentPlayer(val atomPlayer: AtomPlayer, val segmentOptions: SegmentOptions) : AtomPlayer() {
     init {
-
+        var start = 0L
+        segIn.forEachIndexed { index, segment ->
+            segOut[index] = Segment(start, start + segment.duration())
+            start += segment.duration()
+        }
     }
 
-    override fun setup() {
+    override fun prepare() {
         TODO("Not yet implemented")
     }
 
     override fun play() {
-        TODO("Not yet implemented")
+
     }
 
     override fun pause() {
-        TODO("Not yet implemented")
+        atomPlayer.pause();
     }
 
     override fun release() {
-        TODO("Not yet implemented")
+        atomPlayer.release()
     }
 
     override fun seekTo(timeMs: Long) {
+        val time = getInFromOut(timeMs)
+    }
+
+    private fun getInFromOut(timeMs: Long): Long {
+        val first = segOut.indexOfFirst { timeMs < it.end }
+        if (first != -1) {
+            return segIn[first].start + (timeMs - segOut[first].start)
+        }
+        return timeMs
+    }
+
+    private fun getOutFromIn(inPosition: Long) {
 
     }
 
     override fun currentPosition(): Long {
-        TODO("Not yet implemented")
+        return 0;
     }
 
     override fun duration(): Long {
-        TODO("Not yet implemented")
+        return segOut.last().end
     }
 }
 
 class SegmentOptions(val segment: List<Segment>)
 
-class Segment(start: Long, end: Long) {
-    private val range = Range(start, end)
+data class Segment(val start: Long, val end: Long) {
+    fun duration(): Long {
+        return end - start;
+    }
 
-    fun contains(value: Long): Boolean {
-        return range.contains(value)
+    fun contains(position: Long): Boolean {
+        return position in start..end
     }
 }

@@ -31,17 +31,18 @@ class ClusterPlayer constructor(
             }
         }
 
-    override fun setup() {
-        updatePlayerPhase(AtomPlayerPhase.Buffering)
-        players.forEach {
-            it.setup()
+    override fun prepare() {
+        if (!isPreparing) {
+            targetPhase = AtomPlayerPhase.Ready
+            players.forEach {
+                it.prepare()
+            }
         }
-        targetPhase = AtomPlayerPhase.Ready
     }
 
     override fun play() {
-        if (playerPhase == AtomPlayerPhase.Idle) {
-            setup()
+        if (currentPhase == AtomPlayerPhase.Idle) {
+            prepare()
         } else {
             players.forEach {
                 it.play()
@@ -115,7 +116,7 @@ class ClusterPlayer constructor(
             when (phaseChange) {
                 AtomPlayerPhase.Idle -> {; }
                 AtomPlayerPhase.Ready -> {
-                    if (other(atomPlayer).playerPhase == AtomPlayerPhase.Ready) {
+                    if (other(atomPlayer).currentPhase == AtomPlayerPhase.Ready) {
                         updatePlayerPhase(AtomPlayerPhase.Ready)
                         players.forEach {
                             if (targetPhase == AtomPlayerPhase.Playing) {
@@ -151,7 +152,7 @@ class ClusterPlayer constructor(
                     updatePlayerPhase(AtomPlayerPhase.Buffering)
                 }
                 AtomPlayerPhase.End -> {
-                    if (other(atomPlayer).playerPhase == AtomPlayerPhase.End) {
+                    if (other(atomPlayer).currentPhase == AtomPlayerPhase.End) {
                         updatePlayerPhase(AtomPlayerPhase.End)
                     }
                 }

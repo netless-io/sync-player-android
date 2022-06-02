@@ -15,6 +15,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 
+@Deprecated("old class")
 class RtcVideoExoPlayer constructor(
     private val context: Context,
     private val videos: List<VideoItem>,
@@ -98,7 +99,7 @@ class RtcVideoExoPlayer constructor(
     }
 
     private fun setVideoURI(uri: Uri) {
-        playerPhase = AtomPlayerPhase.Buffering
+        currentPhase = AtomPlayerPhase.Buffering
         mediaSource = createMediaSource(uri)
         exoPlayer.prepare(mediaSource!!)
     }
@@ -107,7 +108,7 @@ class RtcVideoExoPlayer constructor(
         checkAndPlayTime(timeMs, true)
     }
 
-    override val isPlaying: Boolean = isRtcPlaying && AtomPlayerPhase.Playing == playerPhase
+    override val isPlaying: Boolean = isRtcPlaying && AtomPlayerPhase.Playing == currentPhase
 
     override var playbackSpeed = 1.0f
         set(value) {
@@ -115,7 +116,7 @@ class RtcVideoExoPlayer constructor(
             exoPlayer.playbackParameters = PlaybackParameters(value)
         }
 
-    override fun setup() {
+    override fun prepare() {
 
     }
 

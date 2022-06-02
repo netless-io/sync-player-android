@@ -23,28 +23,28 @@ abstract class AtomPlayer {
         }
     }
 
-    var playerPhase = AtomPlayerPhase.Idle
+    var currentPhase = AtomPlayerPhase.Idle
 
     internal var targetPhase: AtomPlayerPhase = AtomPlayerPhase.Idle
 
     open val isPlaying: Boolean = false
 
     internal val isPreparing: Boolean
-        get() = playerPhase == AtomPlayerPhase.Idle && targetPhase == AtomPlayerPhase.Ready
+        get() = currentPhase == AtomPlayerPhase.Idle && targetPhase == AtomPlayerPhase.Ready
 
     open val isError: Boolean = false
 
     open var playbackSpeed = 1.0f
 
-    internal abstract fun setup()
+    internal abstract fun prepare()
 
     abstract fun play()
 
     abstract fun pause()
 
     open fun stop() {
-        pause()
         seekTo(0)
+        pause()
     }
 
     abstract fun release()
@@ -70,9 +70,9 @@ abstract class AtomPlayer {
     }
 
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
-        Log.d("[$name] updatePlayerPhase to $newPhase, from $playerPhase")
-        if (playerPhase != newPhase) {
-            playerPhase = newPhase
+        Log.d("[$name] updatePlayerPhase to $newPhase, from $currentPhase")
+        if (currentPhase != newPhase) {
+            currentPhase = newPhase
             notifyChanged {
                 it.onPhaseChanged(this, newPhase)
             }
@@ -82,7 +82,7 @@ abstract class AtomPlayer {
     internal val debugInfo: String
         get() = "{" +
                 "isPlaying: $isPlaying," +
-                "playerPhase: $playerPhase" +
+                "playerPhase: $currentPhase" +
                 "}"
 }
 

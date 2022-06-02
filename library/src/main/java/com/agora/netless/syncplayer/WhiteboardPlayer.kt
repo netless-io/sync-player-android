@@ -13,7 +13,7 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
             override fun onPhaseChanged(phase: PlayerPhase) {
                 Log.d("[$name] interPlayer onPhaseChanged $phase")
 
-                handler.post { updateWhitePlayerPhase(phase) }
+                handler.post { onWhitePhaseChanged(phase) }
             }
 
             override fun onLoadFirstFrame() {
@@ -58,7 +58,7 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
     }
 
     override val isPlaying: Boolean
-        get() = playerPhase == AtomPlayerPhase.Playing
+        get() = currentPhase == AtomPlayerPhase.Playing
 
     override var playbackSpeed = 1.0f
         set(value) {
@@ -66,7 +66,7 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
             player.playbackSpeed = value.toDouble()
         }
 
-    override fun setup() {
+    override fun prepare() {
         if (!isPreparing) {
             player.play()
             targetPhase = AtomPlayerPhase.Ready
@@ -74,8 +74,8 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
     }
 
     override fun play() {
-        if (playerPhase == AtomPlayerPhase.Idle) {
-            setup()
+        if (currentPhase == AtomPlayerPhase.Idle) {
+            prepare()
         } else {
             player.play()
         }
@@ -106,10 +106,10 @@ class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
         return player.playerTimeInfo.timeDuration
     }
 
-    private fun updateWhitePlayerPhase(phase: PlayerPhase) {
+    private fun onWhitePhaseChanged(phase: PlayerPhase) {
         when (phase) {
             PlayerPhase.buffering -> {
-                if (playerPhase != AtomPlayerPhase.Idle) {
+                if (currentPhase != AtomPlayerPhase.Idle) {
                     updatePlayerPhase(AtomPlayerPhase.Buffering)
                 }
             }

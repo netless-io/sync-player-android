@@ -49,7 +49,7 @@ class VideoPlayer constructor(
         containerView.setPlayer(exoPlayer)
         addPlayerListener(object : AtomPlayerListener {
             override fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
-                containerView.showBuffering(playerPhase == AtomPlayerPhase.Buffering)
+                containerView.showBuffering(currentPhase == AtomPlayerPhase.Buffering)
             }
 
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
@@ -58,7 +58,7 @@ class VideoPlayer constructor(
         })
     }
 
-    override fun setup() {
+    override fun prepare() {
         if (!isPreparing) {
             targetPhase = AtomPlayerPhase.Ready
             playerError = null
@@ -85,7 +85,7 @@ class VideoPlayer constructor(
         if (isInPlaybackState() && timeMs < duration()) {
             exoPlayer.seekTo(timeMs)
         } else {
-            if (playerPhase != AtomPlayerPhase.End) {
+            if (currentPhase != AtomPlayerPhase.End) {
                 pauseInternal()
                 updatePlayerPhase(AtomPlayerPhase.End)
             }
@@ -109,11 +109,11 @@ class VideoPlayer constructor(
         }
 
     override fun play() {
-        if (playerPhase == AtomPlayerPhase.End) {
+        if (currentPhase == AtomPlayerPhase.End) {
             return
         }
-        if (playerPhase == AtomPlayerPhase.Idle) {
-            setup()
+        if (currentPhase == AtomPlayerPhase.Idle) {
+            prepare()
         } else {
             playInternal()
         }
@@ -137,6 +137,8 @@ class VideoPlayer constructor(
 
     override fun release() {
         exoPlayer.release()
+        currentPhase == AtomPlayerPhase.Idle
+        targetPhase == AtomPlayerPhase.Idle
     }
 
     override fun currentPosition(): Long {
@@ -151,7 +153,7 @@ class VideoPlayer constructor(
     }
 
     private fun isInPlaybackState(): Boolean {
-        return playerPhase != AtomPlayerPhase.Idle
+        return currentPhase != AtomPlayerPhase.Idle
     }
 
     override fun onPlaybackStateChanged(state: Int) {
@@ -162,12 +164,12 @@ class VideoPlayer constructor(
                 updatePlayerPhase(AtomPlayerPhase.Idle)
             }
             Player.STATE_BUFFERING -> {
-                if (playerPhase != AtomPlayerPhase.Idle) {
+                if (currentPhase != AtomPlayerPhase.Idle) {
                     updatePlayerPhase(AtomPlayerPhase.Buffering)
                 }
             }
             Player.STATE_READY -> {
-                if (playerPhase == AtomPlayerPhase.Idle) {
+                if (currentPhase == AtomPlayerPhase.Idle) {
                     updatePlayerPhase(AtomPlayerPhase.Ready)
                 }
                 if (targetPhase == AtomPlayerPhase.Playing ||
