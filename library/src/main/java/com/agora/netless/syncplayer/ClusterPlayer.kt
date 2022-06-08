@@ -68,7 +68,7 @@ class ClusterPlayer constructor(
         seeking = 2
         players[0].seekTo(timeMs)
         players[1].seekTo(timeMs)
-        targetPosition = timeMs;
+        targetPosition = timeMs
     }
 
     private fun isSeeking(): Boolean {

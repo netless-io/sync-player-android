@@ -35,32 +35,74 @@ internal class PositionNotifier constructor(
     }
 }
 
-internal class FakePlayer {
-    var position = 0L
-    var lastPlay = 0L
-    var playing = false;
+internal class FakePlayer(private val duration: Long) : AtomPlayer() {
+    private var startPosition = 0L
+    private var lastPlay = 0L
 
-    fun play() {
-        playing = true
-        lastPlay = System.currentTimeMillis();
+    private val positionNotifier = PositionNotifier(handler, this)
+
+    init {
+        this.addPlayerListener(object : AtomPlayerListener {
+            override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
+                if (position > duration) {
+                    pause()
+                    updatePlayerPhase(AtomPlayerPhase.End)
+                }
+            }
+        })
     }
 
-    fun pause() {
-        playing = false
-        position += System.currentTimeMillis() - lastPlay
-    }
-
-    fun seekTo(timeMs: Long) {
-        position = timeMs
-        lastPlay = System.currentTimeMillis()
-    }
-
-    fun currentPosition(): Long {
-        return if (playing) {
-            position + System.currentTimeMillis() - lastPlay
-        } else {
-            position
+    override fun prepare() {
+        if (!isPreparing) {
+            updatePlayerPhase(AtomPlayerPhase.Ready)
         }
+    }
+
+    override fun play() {
+        if (currentPhase == AtomPlayerPhase.Idle) {
+            prepare()
+        } else {
+            playInternal()
+        }
+        targetPhase = AtomPlayerPhase.Playing
+    }
+
+    private fun playInternal() {
+        lastPlay = System.currentTimeMillis()
+        positionNotifier.start()
+        updatePlayerPhase(AtomPlayerPhase.Playing)
+    }
+
+    override fun pause() {
+        if (isPlaying) {
+            startPosition += System.currentTimeMillis() - lastPlay
+            positionNotifier.stop()
+            updatePlayerPhase(AtomPlayerPhase.Paused)
+        }
+    }
+
+    override fun release() {
+
+    }
+
+    override fun seekTo(timeMs: Long) {
+        startPosition = timeMs
+        lastPlay = System.currentTimeMillis()
+        notifyChanged {
+            it.onSeekTo(this, timeMs)
+        }
+    }
+
+    override fun currentPosition(): Long {
+        return if (isPlaying) {
+            startPosition + System.currentTimeMillis() - lastPlay
+        } else {
+            startPosition
+        }
+    }
+
+    override fun duration(): Long {
+        return duration
     }
 }
 

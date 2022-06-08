@@ -51,16 +51,16 @@ public class MultipleActivity extends AppCompatActivity implements PlayerListene
     private View playerView;
     private View playerView2;
     private WhiteboardView whiteboardView;
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
     private Player playbackPlayer;
     private AtomPlayer whiteboardPlayer;
     private AtomPlayer videoPlayer;
     private AtomPlayer videoPlayer2;
     private AtomPlayer clusterVideoPlayer;
     private AtomPlayer clusterPlayer;
-    private Handler mSeekBarUpdateHandler = new Handler(Looper.getMainLooper());
-    private boolean mUserIsSeeking = false;
-    private Runnable mUpdateSeekBar = new Runnable() {
+    private final Handler mSeekBarUpdateHandler = new Handler(Looper.getMainLooper());
+    private final boolean mUserIsSeeking = false;
+    private final Runnable mUpdateSeekBar = new Runnable() {
         @Override
         public void run() {
             if (mUserIsSeeking) {

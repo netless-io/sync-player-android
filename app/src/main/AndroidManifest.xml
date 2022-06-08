@@ -34,5 +34,9 @@
         <activity
             android:name=".TriplePlayerActivity"
             android:exported="true" />
+
+        <activity
+            android:name=".OffsetPlayerActivity"
+            android:exported="true" />
     </application>
 </manifest>

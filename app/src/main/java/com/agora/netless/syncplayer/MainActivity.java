@@ -20,7 +20,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private UseCaseAdapter useCaseAdapter;
 
-    private List<UseCase> ALL_USE_CASE = Arrays.asList(
+    private final List<UseCase> ALL_USE_CASE = Arrays.asList(
+            new UseCase("OffsetPlayer", "", OffsetPlayerActivity.class),
             new UseCase("VideoPlayer", "", VideoPlayerActivity.class),
             new UseCase("WhiteboardPlayer", "", WhiteboardPlayerActivity.class),
             new UseCase("ClusterPlayer", "", ClusterPlayerActivity.class),

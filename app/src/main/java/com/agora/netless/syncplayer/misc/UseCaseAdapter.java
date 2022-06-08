@@ -15,7 +15,7 @@ import java.util.List;
 
 public class UseCaseAdapter extends RecyclerView.Adapter<UseCaseAdapter.ViewHolder> {
     private Context context;
-    private List<UseCase> useCases;
+    private final List<UseCase> useCases;
     private OnItemClickListener onItemClickListener;
 
     public UseCaseAdapter(List<UseCase> useCases) {

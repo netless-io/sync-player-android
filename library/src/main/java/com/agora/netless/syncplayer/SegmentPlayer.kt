@@ -27,7 +27,7 @@ class SegmentPlayer(
     }
 
     override fun pause() {
-        atomPlayer.pause();
+        atomPlayer.pause()
     }
 
     override fun release() {
@@ -51,7 +51,7 @@ class SegmentPlayer(
     }
 
     override fun currentPosition(): Long {
-        return 0;
+        return 0
     }
 
     override fun duration(): Long {
@@ -63,7 +63,7 @@ class SegmentOptions(val segment: List<Segment>)
 
 data class Segment(val start: Long, val end: Long) {
     fun duration(): Long {
-        return end - start;
+        return end - start
     }
 
     fun contains(position: Long): Boolean {

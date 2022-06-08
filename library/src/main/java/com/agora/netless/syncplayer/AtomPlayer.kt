@@ -27,7 +27,8 @@ abstract class AtomPlayer {
 
     internal var targetPhase: AtomPlayerPhase = AtomPlayerPhase.Idle
 
-    open val isPlaying: Boolean = false
+    open val isPlaying: Boolean
+        get() = currentPhase == AtomPlayerPhase.Playing
 
     internal val isPreparing: Boolean
         get() = currentPhase == AtomPlayerPhase.Idle && targetPhase == AtomPlayerPhase.Ready
@@ -78,12 +79,6 @@ abstract class AtomPlayer {
             }
         }
     }
-
-    internal val debugInfo: String
-        get() = "{" +
-                "isPlaying: $isPlaying," +
-                "playerPhase: $currentPhase" +
-                "}"
 }
 
 interface AtomPlayerListener {
