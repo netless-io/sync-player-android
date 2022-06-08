@@ -9,8 +9,7 @@ import android.webkit.WebView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
 import com.google.gson.Gson;
 import com.herewhite.sdk.Player;
@@ -31,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author fenglibin
  */
-public class MultipleActivity extends AppCompatActivity implements PlayerListener {
+public class MultipleActivity extends BaseActivity implements PlayerListener {
     public static final String TAG = MultipleActivity.class.getSimpleName();
     private static final float PLAYBACK_SPEED = 1.0F;
     ArrayList<VideoItem> records = new ArrayList<VideoItem>() {

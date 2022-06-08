@@ -7,15 +7,15 @@ import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
+import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
 import com.agora.netless.syncplayer.misc.PlayerStateLayout;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 
 import java.util.Arrays;
 
-public class SelectionPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+public class SelectionPlayerActivity extends BaseActivity implements View.OnClickListener {
     private FrameLayout playerContainer;
     private PlayerStateLayout playerStateLayout;
     private SeekBar seekBar;

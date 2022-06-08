@@ -7,12 +7,12 @@ import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
+import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 
-public class ClusterPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+public class ClusterPlayerActivity extends BaseActivity implements View.OnClickListener {
     private FrameLayout playerContainer1;
     private FrameLayout playerContainer2;
     private ClusterPlayer clusterPlayer;

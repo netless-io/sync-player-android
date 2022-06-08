@@ -8,8 +8,8 @@ import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
+import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 import com.herewhite.sdk.AbstractPlayerEventListener;
@@ -21,7 +21,7 @@ import com.herewhite.sdk.domain.PlayerConfiguration;
 import com.herewhite.sdk.domain.Promise;
 import com.herewhite.sdk.domain.SDKError;
 
-public class TriplePlayerActivity extends AppCompatActivity implements View.OnClickListener {
+public class TriplePlayerActivity extends BaseActivity implements View.OnClickListener {
     private WhiteboardView whiteboardView;
     private FrameLayout playerContainer1;
     private FrameLayout playerContainer2;
