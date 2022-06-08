@@ -10,14 +10,14 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.agora.netless.syncplayer.misc.Constant;
-import com.agora.netless.syncplayer.misc.PlayerInfoDebugLayout;
+import com.agora.netless.syncplayer.misc.PlayerStateLayout;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 
 import java.util.Arrays;
 
 public class SelectionPlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private FrameLayout playerContainer;
-    private PlayerInfoDebugLayout playerInfoDebugLayout;
+    private PlayerStateLayout playerStateLayout;
     private SeekBar seekBar;
 
     private SelectionPlayer selectionPlayer;
@@ -35,7 +35,7 @@ public class SelectionPlayerActivity extends AppCompatActivity implements View.O
         VideoPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
         videoPlayer.setPlayerName("videoPlayer");
         videoPlayer.setPlayerContainer(playerContainer);
-        playerInfoDebugLayout.attachPlayer(videoPlayer);
+        playerStateLayout.attachPlayer(videoPlayer);
 
         selectionPlayer = new SelectionPlayer(videoPlayer, new SelectionOptions(
                 Arrays.asList(
@@ -68,7 +68,7 @@ public class SelectionPlayerActivity extends AppCompatActivity implements View.O
 
     private void initView() {
         playerContainer = findViewById(R.id.player_container);
-        playerInfoDebugLayout = findViewById(R.id.player_info_debug_layout);
+        playerStateLayout = findViewById(R.id.player_state_layout);
 
         findViewById(R.id.button_play).setOnClickListener(this);
         findViewById(R.id.button_pause).setOnClickListener(this);

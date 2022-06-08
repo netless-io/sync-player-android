@@ -14,8 +14,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <com.agora.netless.syncplayer.misc.PlayerInfoDebugLayout
-            android:id="@+id/player_info_debug_layout"
+        <com.agora.netless.syncplayer.misc.PlayerStateLayout
+            android:id="@+id/player_state_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </FrameLayout>

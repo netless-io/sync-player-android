@@ -18,26 +18,26 @@ import com.agora.netless.syncplayer.R;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class PlayerInfoDebugLayout extends FrameLayout {
+public final class PlayerStateLayout extends FrameLayout {
     private TextView positionLabel;
     private ProgressBar loadingBar;
     private AtomPlayer player;
 
-    public PlayerInfoDebugLayout(Context context) {
+    public PlayerStateLayout(Context context) {
         this(context, null, 0);
     }
 
-    public PlayerInfoDebugLayout(Context context, AttributeSet attrs) {
+    public PlayerStateLayout(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public PlayerInfoDebugLayout(@NotNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public PlayerStateLayout(@NotNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
 
     private void init() {
-        View root = LayoutInflater.from(getContext()).inflate(R.layout.layout_debug_player_info, this);
+        View root = LayoutInflater.from(getContext()).inflate(R.layout.layout_player_state, this);
         positionLabel = root.findViewById(R.id.position_label);
         loadingBar = root.findViewById(R.id.loading_bar);
     }
