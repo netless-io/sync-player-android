@@ -1,7 +1,5 @@
 package com.agora.netless.syncplayer
 
-import android.os.Handler
-
 class ClusterPlayer constructor(
     private val one: AtomPlayer,
     private val two: AtomPlayer,
@@ -14,7 +12,7 @@ class ClusterPlayer constructor(
     private var targetPosition: Long = 0
 
     init {
-        val atomPlayerListener = LocalAtomPlayerListener(handler)
+        val atomPlayerListener = LocalAtomPlayerListener()
         players[0].addPlayerListener(atomPlayerListener)
         players[1].addPlayerListener(atomPlayerListener)
     }
@@ -95,7 +93,7 @@ class ClusterPlayer constructor(
         pauseReason[index(atomPlayer)] = false
     }
 
-    inner class LocalAtomPlayerListener(handler: Handler) : AtomPlayerListener {
+    inner class LocalAtomPlayerListener : AtomPlayerListener {
         override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
             if (!isSeeking()) {
                 if (this@ClusterPlayer.position < position) {
@@ -163,6 +161,7 @@ class ClusterPlayer constructor(
             if (seeking > 0) seeking--
             if (seeking == 0) {
                 Log.d("[$name] onSeekTo ${atomPlayer.name} $timeMs")
+
                 position = targetPosition
                 notifyChanged {
                     it.onSeekTo(this@ClusterPlayer, timeMs = timeMs)

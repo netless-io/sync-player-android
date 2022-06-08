@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private UseCaseAdapter useCaseAdapter;
 
     private final List<UseCase> ALL_USE_CASE = Arrays.asList(
+            new UseCase("WhiteboardSelectionPlayer", "", WhiteboardSelectionPlayerActivity.class),
             new UseCase("SelectionPlayer", "", SelectionPlayerActivity.class),
             new UseCase("OffsetPlayer", "", OffsetPlayerActivity.class),
             new UseCase("VideoPlayer", "", VideoPlayerActivity.class),

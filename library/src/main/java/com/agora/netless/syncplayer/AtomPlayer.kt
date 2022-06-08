@@ -2,9 +2,7 @@ package com.agora.netless.syncplayer
 
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import java.util.concurrent.CopyOnWriteArraySet
 
 abstract class AtomPlayer {
@@ -73,7 +71,7 @@ abstract class AtomPlayer {
     }
 
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
-        Log.d("[$name] updatePlayerPhase to $newPhase, from $currentPhase")
+        Log.d("[$name] try updatePlayerPhase to $newPhase, from $currentPhase")
         if (currentPhase != newPhase) {
             currentPhase = newPhase
             notifyChanged {

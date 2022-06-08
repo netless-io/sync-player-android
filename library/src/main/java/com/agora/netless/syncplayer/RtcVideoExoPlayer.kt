@@ -5,7 +5,6 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.MediaSource

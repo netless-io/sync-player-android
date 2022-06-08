@@ -4,8 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
-import android.widget.ProgressBar
-import android.widget.TextView
 import com.agora.syncplayer.library.R
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView

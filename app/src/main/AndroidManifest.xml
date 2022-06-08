@@ -42,5 +42,6 @@
         <activity
             android:name=".SelectionPlayerActivity"
             android:exported="true" />
+        <activity android:name=".WhiteboardSelectionPlayerActivity" />
     </application>
 </manifest>
