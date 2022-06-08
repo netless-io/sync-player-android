@@ -16,23 +16,10 @@ class VideoPlayerView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr) {
     var playerView: PlayerView
-    private var positionLabel: TextView
-    private var loadingBar: ProgressBar
 
     init {
         val root = LayoutInflater.from(context).inflate(R.layout.video_player_layout, this)
         playerView = root.findViewById(R.id.player_view)
-        positionLabel = root.findViewById(R.id.position_label)
-        loadingBar = root.findViewById(R.id.loading_bar)
-    }
-
-    fun showBuffering(loading: Boolean) {
-        loadingBar.visibility = if (loading) VISIBLE else GONE
-    }
-
-    fun setPosition(position: Long) {
-        val second = position / 1000
-        positionLabel.text = (second / 60).toString() + ":" + second % 60
     }
 
     fun setPlayer(player: Player) {

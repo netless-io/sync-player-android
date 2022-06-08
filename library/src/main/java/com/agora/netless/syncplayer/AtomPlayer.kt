@@ -3,6 +3,8 @@ package com.agora.netless.syncplayer
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import java.util.concurrent.CopyOnWriteArraySet
 
 abstract class AtomPlayer {
@@ -56,7 +58,7 @@ abstract class AtomPlayer {
 
     abstract fun duration(): Long
 
-    open fun setPlayerView(view: View) {}
+    open fun setPlayerContainer(container: ViewGroup) {}
 
     var name: String? = null
         get() {

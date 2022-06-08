@@ -63,11 +63,11 @@ public class TriplePlayerActivity extends AppCompatActivity implements View.OnCl
     private void initPlayer(Player player) {
         VideoPlayer videoPlayer1 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
         videoPlayer1.setPlayerName("videoPlayer1");
-        videoPlayer1.setPlayerView(playerContainer1);
+        videoPlayer1.setPlayerContainer(playerContainer1);
 
         VideoPlayer videoPlayer2 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
         videoPlayer2.setPlayerName("videoPlayer2");
-        videoPlayer2.setPlayerView(playerContainer2);
+        videoPlayer2.setPlayerContainer(playerContainer2);
 
         ClusterPlayer combinePlayer = new ClusterPlayer(videoPlayer1, videoPlayer2);
         combinePlayer.setPlayerName("combinePlayer");

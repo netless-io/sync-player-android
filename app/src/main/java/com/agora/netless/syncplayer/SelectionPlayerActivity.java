@@ -10,30 +10,41 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.agora.netless.syncplayer.misc.Constant;
+import com.agora.netless.syncplayer.misc.PlayerInfoDebugLayout;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 
-public class OffsetPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+import java.util.Arrays;
+
+public class SelectionPlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private FrameLayout playerContainer;
+    private PlayerInfoDebugLayout playerInfoDebugLayout;
     private SeekBar seekBar;
 
-    private OffsetPlayer offsetPlayer;
+    private SelectionPlayer selectionPlayer;
     private boolean isSeeking;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_offset_player);
+        setContentView(R.layout.activity_selection_player);
         initView();
         initData();
     }
 
     private void initData() {
-        VideoPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
+        VideoPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
         videoPlayer.setPlayerName("videoPlayer");
         videoPlayer.setPlayerContainer(playerContainer);
+        playerInfoDebugLayout.attachPlayer(videoPlayer);
 
-        offsetPlayer = new OffsetPlayer(videoPlayer, 5000L);
-        offsetPlayer.addPlayerListener(new AtomPlayerListener() {
+        selectionPlayer = new SelectionPlayer(videoPlayer, new SelectionOptions(
+                Arrays.asList(
+                        new Selection(0, 5_000),
+                        new Selection(10_000, 20_000),
+                        new Selection(60_000, 100_000)
+                )
+        ));
+        selectionPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -44,7 +55,7 @@ public class OffsetPlayerActivity extends AppCompatActivity implements View.OnCl
             @Override
             public void onPhaseChanged(@NonNull AtomPlayer atomPlayer, @NonNull AtomPlayerPhase phase) {
                 if (phase == AtomPlayerPhase.Ready) {
-                    seekBar.setMax((int) atomPlayer.duration() * 2);
+                    seekBar.setMax((int) atomPlayer.duration());
                 }
             }
 
@@ -57,6 +68,7 @@ public class OffsetPlayerActivity extends AppCompatActivity implements View.OnCl
 
     private void initView() {
         playerContainer = findViewById(R.id.player_container);
+        playerInfoDebugLayout = findViewById(R.id.player_info_debug_layout);
 
         findViewById(R.id.button_play).setOnClickListener(this);
         findViewById(R.id.button_pause).setOnClickListener(this);
@@ -83,7 +95,7 @@ public class OffsetPlayerActivity extends AppCompatActivity implements View.OnCl
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    offsetPlayer.seekTo(targetProgress);
+                    selectionPlayer.seekTo(targetProgress);
                 }
             }
         });
@@ -93,13 +105,13 @@ public class OffsetPlayerActivity extends AppCompatActivity implements View.OnCl
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                offsetPlayer.play();
+                selectionPlayer.play();
                 break;
             case R.id.button_pause:
-                offsetPlayer.pause();
+                selectionPlayer.pause();
                 break;
             case R.id.button_reset:
-                offsetPlayer.stop();
+                selectionPlayer.stop();
                 break;
         }
     }

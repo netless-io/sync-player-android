@@ -30,7 +30,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     private void initData() {
         videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
         videoPlayer.setPlayerName("videoPlayer");
-        videoPlayer.setPlayerView(playerContainer);
+        videoPlayer.setPlayerContainer(playerContainer);
 
         videoPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override

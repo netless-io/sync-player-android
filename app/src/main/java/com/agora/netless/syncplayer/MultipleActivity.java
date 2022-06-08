@@ -129,11 +129,11 @@ public class MultipleActivity extends AppCompatActivity implements PlayerListene
     private void setupPlayer() {
         try {
             videoPlayer = new RtcVideoExoPlayer(this, records);
-            videoPlayer.setPlayerView(playerView);
+            // videoPlayer.setPlayerContainer(playerView);
             videoPlayer.setPlayerName("videoPlayer");
 
             videoPlayer2 = new VideoPlayer(this, "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/oceans.mp4");
-            videoPlayer2.setPlayerView(playerView2);
+            // videoPlayer2.setPlayerContainer(playerView2);
             videoPlayer2.setPlayerName("videoPlayer2");
 
             clusterVideoPlayer = new ClusterPlayer(videoPlayer, videoPlayer2);

@@ -86,13 +86,13 @@ class RtcVideoExoPlayer constructor(
      *
      * @param view 视图实例
      */
-    override fun setPlayerView(view: View) {
-        if (view !is PlayerView) {
-            throw IllegalArgumentException("view must be type of PlayerView")
-        }
-        this.playerView = view
-        this.playerView!!.player = exoPlayer
-    }
+    // override fun setPlayerContainer(view: View) {
+    //     if (view !is PlayerView) {
+    //         throw IllegalArgumentException("view must be type of PlayerView")
+    //     }
+    //     this.playerView = view
+    //     this.playerView!!.player = exoPlayer
+    // }
 
     private fun setVideoPath(path: String) {
         setVideoURI(Uri.parse(path))

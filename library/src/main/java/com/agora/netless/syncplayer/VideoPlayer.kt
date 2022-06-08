@@ -2,7 +2,7 @@ package com.agora.netless.syncplayer
 
 import android.content.Context
 import android.net.Uri
-import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import com.agora.netless.syncplayer.ui.VideoPlayerView
@@ -38,24 +38,15 @@ class VideoPlayer constructor(
     /**
      * 设置播放视图
      *
-     * @param view 视图实例
+     * @param container 视图实例
      */
-    override fun setPlayerView(view: View) {
-        if (view !is FrameLayout) {
-            throw IllegalArgumentException("view must be type of PlayerView")
+    override fun setPlayerContainer(container: ViewGroup) {
+        if (container !is FrameLayout) {
+            throw IllegalArgumentException("videoPlayer container must be type of FrameLayout!")
         }
         val fillParent = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-        view.addView(containerView, fillParent)
+        container.addView(containerView, fillParent)
         containerView.setPlayer(exoPlayer)
-        addPlayerListener(object : AtomPlayerListener {
-            override fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
-                containerView.showBuffering(currentPhase == AtomPlayerPhase.Buffering)
-            }
-
-            override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
-                containerView.setPosition(position)
-            }
-        })
     }
 
     override fun prepare() {
