@@ -6,8 +6,9 @@ import com.herewhite.sdk.domain.PlayerPhase
 import com.herewhite.sdk.domain.PlayerState
 import com.herewhite.sdk.domain.SDKError
 
-class WhiteboardPlayer constructor(private val player: Player) : AtomPlayer() {
-
+class WhiteboardPlayer(
+    private val player: Player
+) : AbstractAtomPlayer() {
     init {
         player.addPlayerListener(object : PlayerListener {
             override fun onPhaseChanged(phase: PlayerPhase) {

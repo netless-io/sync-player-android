@@ -3,7 +3,7 @@ package com.agora.netless.syncplayer
 class OffsetPlayer constructor(
     private val player: AtomPlayer,
     private val offset: Long,
-) : AtomPlayer() {
+) : AbstractAtomPlayer() {
     private val fakePlayer = FakePlayer(offset)
 
     init {

@@ -14,8 +14,8 @@ import com.agora.netless.syncplayer.R;
 import java.util.List;
 
 public class UseCaseAdapter extends RecyclerView.Adapter<UseCaseAdapter.ViewHolder> {
-    private Context context;
     private final List<UseCase> useCases;
+    private Context context;
     private OnItemClickListener onItemClickListener;
 
     public UseCaseAdapter(List<UseCase> useCases) {

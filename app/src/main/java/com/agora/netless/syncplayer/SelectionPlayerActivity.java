@@ -33,14 +33,15 @@ public class SelectionPlayerActivity extends BaseActivity implements View.OnClic
 
     private void initData() {
         VideoPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
-        videoPlayer.setPlayerName("videoPlayer");
+        videoPlayer.setName("videoPlayer");
         videoPlayer.setPlayerContainer(playerContainer);
         playerStateLayout.attachPlayer(videoPlayer);
 
         selectionPlayer = new SelectionPlayer(videoPlayer, new SelectionOptions(
                 Arrays.asList(
                         new Selection(5_000, 10_000),
-                        new Selection(20_000, 30_000),
+                        new Selection(15_000, 20_000),
+                        new Selection(30_000, 40_000),
                         new Selection(60_000, 100_000)
                 )
         ));

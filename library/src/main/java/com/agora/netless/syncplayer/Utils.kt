@@ -9,7 +9,7 @@ import android.util.Log
  */
 internal class PositionNotifier constructor(
     val handler: Handler,
-    val atomPlayer: AtomPlayer,
+    val atomPlayer: AbstractAtomPlayer,
     val intervalTime: Long = 500,
 ) {
     private val ticker = object : Runnable {
@@ -35,14 +35,14 @@ internal class PositionNotifier constructor(
     }
 }
 
-internal class FakePlayer(private val duration: Long) : AtomPlayer() {
+internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
     private var startPosition = 0L
     private var lastPlay = 0L
 
     private val positionNotifier = PositionNotifier(handler, this)
 
     init {
-        this.addPlayerListener(object : AtomPlayerListener {
+        addPlayerListener(object : AtomPlayerListener {
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
                 if (position > duration) {
                     pause()

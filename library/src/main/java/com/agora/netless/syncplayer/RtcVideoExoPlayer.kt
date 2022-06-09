@@ -18,7 +18,7 @@ import com.google.android.exoplayer2.util.Util
 class RtcVideoExoPlayer constructor(
     private val context: Context,
     private val videos: List<VideoItem>,
-) : AtomPlayer(), Player.Listener {
+) : AbstractAtomPlayer(), Player.Listener {
 
     private val dataSourceFactory = DefaultDataSourceFactory(
         context,
@@ -85,14 +85,6 @@ class RtcVideoExoPlayer constructor(
      *
      * @param view 视图实例
      */
-    // override fun setPlayerContainer(view: View) {
-    //     if (view !is PlayerView) {
-    //         throw IllegalArgumentException("view must be type of PlayerView")
-    //     }
-    //     this.playerView = view
-    //     this.playerView!!.player = exoPlayer
-    // }
-
     private fun setVideoPath(path: String) {
         setVideoURI(Uri.parse(path))
     }

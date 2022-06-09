@@ -3,7 +3,7 @@ package com.agora.netless.syncplayer
 class ClusterPlayer constructor(
     private val one: AtomPlayer,
     private val two: AtomPlayer,
-) : AtomPlayer() {
+) : AbstractAtomPlayer() {
     private var players: Array<AtomPlayer> = arrayOf(one, two)
     private var pauseReason: Array<Boolean> = arrayOf(false, false)
 

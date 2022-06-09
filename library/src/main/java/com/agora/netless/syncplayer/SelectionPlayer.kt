@@ -6,7 +6,7 @@ package com.agora.netless.syncplayer
 class SelectionPlayer(
     private val atomPlayer: AtomPlayer,
     selectionOptions: SelectionOptions,
-) : AtomPlayer() {
+) : AbstractAtomPlayer() {
     // 内部播放器使用参数
     private val segInter: List<Selection> = selectionOptions.selections
 
@@ -14,7 +14,7 @@ class SelectionPlayer(
     private val segOuter: List<Selection>
 
     // 正在播放的段
-    private var currentSelection = 0
+    private var currentSelection = -1
 
     init {
         var start = 0L
@@ -34,14 +34,28 @@ class SelectionPlayer(
             }
 
             override fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
+                if (phaseChange == AtomPlayerPhase.Ready) {
+                    currentSelection = 0
+                    atomPlayer.seekTo(segInter[0].start)
+                }
                 updatePlayerPhase(phaseChange)
             }
 
-            override fun onPositionChanged(atomPlayer: AtomPlayer, inPosition: Long) {
-                notifyChanged {
-                    it.onPositionChanged(this@SelectionPlayer, getOutFromIn(inPosition))
+            override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
+                if (checkInternalEnd(position)) {
+                    atomPlayer.pause()
+                    updatePlayerPhase(AtomPlayerPhase.End)
+                    return
                 }
-                checkAndSeek(inPosition)
+                val index = segInter.indexOfFirst { position < it.end }
+                if (index == currentSelection + 1) {
+                    atomPlayer.seekTo(segInter[index].start)
+                } else {
+                    // continue playing
+                    notifyChanged {
+                        it.onPositionChanged(this@SelectionPlayer, getOutFromIn(position))
+                    }
+                }
             }
         })
     }
@@ -83,17 +97,7 @@ class SelectionPlayer(
         return inPosition
     }
 
-    private fun checkAndSeek(inPosition: Long) {
-        if (inPosition > segInter.last().end) {
-            atomPlayer.pause()
-            updatePlayerPhase(AtomPlayerPhase.End)
-            return
-        }
-        val first = segInter.indexOfFirst { inPosition < it.end }
-        if (first == currentSelection + 1) {
-            atomPlayer.seekTo(segInter[first].start)
-        }
-    }
+    private fun checkInternalEnd(inPosition: Long) = inPosition > segInter.last().end
 
     override fun currentPosition(): Long {
         val inPosition = atomPlayer.currentPosition()

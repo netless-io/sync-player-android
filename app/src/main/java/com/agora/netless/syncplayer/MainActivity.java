@@ -17,9 +17,6 @@ import java.util.List;
  * @author fenglibin
  */
 public class MainActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private UseCaseAdapter useCaseAdapter;
-
     private final List<UseCase> ALL_USE_CASE = Arrays.asList(
             new UseCase("WhiteboardSelectionPlayer", "", WhiteboardSelectionPlayerActivity.class),
             new UseCase("SelectionPlayer", "", SelectionPlayerActivity.class),
@@ -35,10 +32,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        recyclerView = findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        useCaseAdapter = new UseCaseAdapter(ALL_USE_CASE);
+        UseCaseAdapter useCaseAdapter = new UseCaseAdapter(ALL_USE_CASE);
         useCaseAdapter.setOnItemClickListener(this::gotoUserCase);
         recyclerView.setAdapter(useCaseAdapter);
     }

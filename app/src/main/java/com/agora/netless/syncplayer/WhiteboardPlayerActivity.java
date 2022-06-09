@@ -58,7 +58,7 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
 
     private void initPlayer(Player player) {
         whiteboardPlayer = new WhiteboardPlayer(player);
-        whiteboardPlayer.setPlayerName("whiteboardPlayer");
+        whiteboardPlayer.setName("whiteboardPlayer");
 
         whiteboardPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override

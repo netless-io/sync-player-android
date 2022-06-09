@@ -17,9 +17,9 @@ import com.google.android.exoplayer2.util.Util
 class VideoPlayer constructor(
     context: Context,
     private val videoUrl: String,
-) : AtomPlayer(), Player.Listener {
-    private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
-    private val containerView: VideoPlayerView by lazy {
+) : AbstractAtomPlayer(), Player.Listener {
+    private var exoPlayer: SimpleExoPlayer
+    private val videoPlayerView: VideoPlayerView by lazy {
         VideoPlayerView(context)
     }
     private var dataSourceFactory = DefaultDataSourceFactory(
@@ -30,6 +30,7 @@ class VideoPlayer constructor(
     private var playerError: Exception? = null
 
     init {
+        exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
         exoPlayer.addListener(this)
         exoPlayer.setAudioAttributes(AudioAttributes.DEFAULT, false)
         exoPlayer.playWhenReady = false
@@ -44,9 +45,13 @@ class VideoPlayer constructor(
         if (container !is FrameLayout) {
             throw IllegalArgumentException("videoPlayer container must be type of FrameLayout!")
         }
-        val fillParent = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-        container.addView(containerView, fillParent)
-        containerView.setPlayer(exoPlayer)
+        container.addView(
+            videoPlayerView, LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT
+            )
+        )
+        videoPlayerView.setPlayer(exoPlayer)
     }
 
     override fun prepare() {

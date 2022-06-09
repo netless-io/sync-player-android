@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
+import com.agora.netless.syncplayer.misc.PlayerStateLayout;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 import com.herewhite.sdk.AbstractPlayerEventListener;
 import com.herewhite.sdk.Player;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 
 public class WhiteboardSelectionPlayerActivity extends BaseActivity implements View.OnClickListener {
     private WhiteboardView whiteboardView;
+    private PlayerStateLayout playerStateLayout;
     private SeekBar seekBar;
     private boolean isSeeking;
 
@@ -60,15 +62,17 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
 
     private void initPlayer(Player player) {
         WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
-        whiteboardPlayer.setPlayerName("whiteboardPlayer");
+        whiteboardPlayer.setName("whiteboardPlayer");
 
         selectionPlayer = new SelectionPlayer(whiteboardPlayer, new SelectionOptions(
                 Arrays.asList(
                         new Selection(5_000, 10_000),
-                        new Selection(20_000, 30_000),
+                        new Selection(15_000, 20_000),
+                        new Selection(30_000, 40_000),
                         new Selection(60_000, 100_000)
                 )
         ));
+        playerStateLayout.attachPlayer(selectionPlayer);
 
         selectionPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
@@ -94,6 +98,7 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
 
     private void initView() {
         whiteboardView = findViewById(R.id.whiteboard_view);
+        playerStateLayout = findViewById(R.id.player_state_layout);
 
         findViewById(R.id.button_play).setOnClickListener(this);
         findViewById(R.id.button_pause).setOnClickListener(this);

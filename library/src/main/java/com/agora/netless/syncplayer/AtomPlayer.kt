@@ -1,84 +1,42 @@
 package com.agora.netless.syncplayer
 
-import android.os.Handler
-import android.os.Looper
 import android.view.ViewGroup
-import java.util.concurrent.CopyOnWriteArraySet
 
-abstract class AtomPlayer {
-    private var listeners = CopyOnWriteArraySet<AtomPlayerListener>()
-    internal val handler = Handler(Looper.getMainLooper())
-
-    fun addPlayerListener(listener: AtomPlayerListener) {
-        listeners.add(listener)
-    }
-
-    fun removePlayerListener(listener: AtomPlayerListener) {
-        listeners.remove(listener)
-    }
-
-    internal fun notifyChanged(block: (listener: AtomPlayerListener) -> Unit) {
-        handler.post {
-            listeners.forEach(block)
-        }
-    }
-
-    var currentPhase = AtomPlayerPhase.Idle
-
-    internal var targetPhase: AtomPlayerPhase = AtomPlayerPhase.Idle
-
-    open val isPlaying: Boolean
-        get() = currentPhase == AtomPlayerPhase.Playing
-
-    internal val isPreparing: Boolean
-        get() = currentPhase == AtomPlayerPhase.Idle && targetPhase == AtomPlayerPhase.Ready
-
-    open val isError: Boolean = false
-
-    open var playbackSpeed = 1.0f
-
-    internal abstract fun prepare()
-
-    abstract fun play()
-
-    abstract fun pause()
-
-    open fun stop() {
-        seekTo(0)
-        pause()
-    }
-
-    abstract fun release()
-
-    abstract fun seekTo(timeMs: Long)
-
-    abstract fun currentPosition(): Long
-
-    abstract fun duration(): Long
-
-    open fun setPlayerContainer(container: ViewGroup) {}
-
-    var name: String? = null
-        get() {
-            return field ?: "${this.javaClass}"
-        }
-
+interface AtomPlayer {
     /**
      * mostly，it's used for debug
      */
-    fun setPlayerName(name: String) {
-        this.name = name
-    }
+    var name: String
 
-    internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
-        Log.d("[$name] try updatePlayerPhase to $newPhase, from $currentPhase")
-        if (currentPhase != newPhase) {
-            currentPhase = newPhase
-            notifyChanged {
-                it.onPhaseChanged(this, newPhase)
-            }
-        }
-    }
+    val currentPhase: AtomPlayerPhase
+
+    val isPlaying: Boolean
+
+    val isError: Boolean
+
+    var playbackSpeed: Float
+
+    fun prepare()
+
+    fun play()
+
+    fun pause()
+
+    fun stop()
+
+    fun release()
+
+    fun seekTo(timeMs: Long)
+
+    fun currentPosition(): Long
+
+    fun duration(): Long
+
+    fun setPlayerContainer(container: ViewGroup)
+
+    fun addPlayerListener(listener: AtomPlayerListener);
+
+    fun removePlayerListener(listener: AtomPlayerListener);
 }
 
 interface AtomPlayerListener {

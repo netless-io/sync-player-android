@@ -21,6 +21,20 @@ import org.jetbrains.annotations.Nullable;
 public final class PlayerStateLayout extends FrameLayout {
     private TextView positionLabel;
     private ProgressBar loadingBar;
+    AtomPlayerListener playerListener = new AtomPlayerListener() {
+        @Override
+        public void onSeekTo(@NonNull AtomPlayer atomPlayer, long timeMs) {
+
+        }
+
+        public void onPhaseChanged(@NotNull AtomPlayer atomPlayer, @NotNull AtomPlayerPhase phaseChange) {
+            showBuffering(phaseChange == AtomPlayerPhase.Buffering);
+        }
+
+        public void onPositionChanged(@NotNull AtomPlayer atomPlayer, long position) {
+            showPosition(position);
+        }
+    };
     private AtomPlayer player;
 
     public PlayerStateLayout(Context context) {
@@ -61,19 +75,4 @@ public final class PlayerStateLayout extends FrameLayout {
         long second = position / (long) 1000;
         this.positionLabel.setText((CharSequence) (second / (long) 60 + ":" + second % (long) 60));
     }
-
-    AtomPlayerListener playerListener = new AtomPlayerListener() {
-        @Override
-        public void onSeekTo(@NonNull AtomPlayer atomPlayer, long timeMs) {
-
-        }
-
-        public void onPhaseChanged(@NotNull AtomPlayer atomPlayer, @NotNull AtomPlayerPhase phaseChange) {
-            showBuffering(phaseChange == AtomPlayerPhase.Buffering);
-        }
-
-        public void onPositionChanged(@NotNull AtomPlayer atomPlayer, long position) {
-            showPosition(position);
-        }
-    };
 }

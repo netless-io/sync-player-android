@@ -33,6 +33,9 @@ import java.util.concurrent.TimeUnit;
 public class MultipleActivity extends BaseActivity implements PlayerListener {
     public static final String TAG = MultipleActivity.class.getSimpleName();
     private static final float PLAYBACK_SPEED = 1.0F;
+    private final Gson gson = new Gson();
+    private final Handler mSeekBarUpdateHandler = new Handler(Looper.getMainLooper());
+    private final boolean mUserIsSeeking = false;
     ArrayList<VideoItem> records = new ArrayList<VideoItem>() {
         {
             add(new VideoItem(905,
@@ -50,15 +53,7 @@ public class MultipleActivity extends BaseActivity implements PlayerListener {
     private View playerView;
     private View playerView2;
     private WhiteboardView whiteboardView;
-    private final Gson gson = new Gson();
     private Player playbackPlayer;
-    private AtomPlayer whiteboardPlayer;
-    private AtomPlayer videoPlayer;
-    private AtomPlayer videoPlayer2;
-    private AtomPlayer clusterVideoPlayer;
-    private AtomPlayer clusterPlayer;
-    private final Handler mSeekBarUpdateHandler = new Handler(Looper.getMainLooper());
-    private final boolean mUserIsSeeking = false;
     private final Runnable mUpdateSeekBar = new Runnable() {
         @Override
         public void run() {
@@ -71,6 +66,11 @@ public class MultipleActivity extends BaseActivity implements PlayerListener {
             mSeekBarUpdateHandler.postDelayed(this, 200);
         }
     };
+    private AtomPlayer whiteboardPlayer;
+    private AtomPlayer videoPlayer;
+    private AtomPlayer videoPlayer2;
+    private AtomPlayer clusterVideoPlayer;
+    private AtomPlayer clusterPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,14 +129,14 @@ public class MultipleActivity extends BaseActivity implements PlayerListener {
         try {
             videoPlayer = new RtcVideoExoPlayer(this, records);
             // videoPlayer.setPlayerContainer(playerView);
-            videoPlayer.setPlayerName("videoPlayer");
+            videoPlayer.setName("videoPlayer");
 
             videoPlayer2 = new VideoPlayer(this, "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/oceans.mp4");
             // videoPlayer2.setPlayerContainer(playerView2);
-            videoPlayer2.setPlayerName("videoPlayer2");
+            videoPlayer2.setName("videoPlayer2");
 
             clusterVideoPlayer = new ClusterPlayer(videoPlayer, videoPlayer2);
-            clusterVideoPlayer.setPlayerName("clusterVideoPlayer");
+            clusterVideoPlayer.setName("clusterVideoPlayer");
 
             Log.d(TAG, "create success");
         } catch (Exception e) {
@@ -159,10 +159,10 @@ public class MultipleActivity extends BaseActivity implements PlayerListener {
                 playbackPlayer = player;
 
                 whiteboardPlayer = new WhiteboardPlayer(player);
-                whiteboardPlayer.setPlayerName("whiteboardPlayer");
+                whiteboardPlayer.setName("whiteboardPlayer");
 
                 clusterPlayer = new ClusterPlayer(whiteboardPlayer, clusterVideoPlayer);
-                clusterPlayer.setPlayerName("clusterPlayer");
+                clusterPlayer.setName("clusterPlayer");
             }
 
             @Override
@@ -247,6 +247,7 @@ public class MultipleActivity extends BaseActivity implements PlayerListener {
     @Override
     public void onScheduleTimeChanged(long time) {
         if (isPlayable()) {
+
         }
     }
 
