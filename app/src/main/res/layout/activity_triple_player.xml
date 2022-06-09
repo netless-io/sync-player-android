@@ -12,18 +12,39 @@
         android:orientation="horizontal">
 
         <FrameLayout
-            android:id="@+id/player_container_1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:padding="4dp" />
+            android:padding="4dp">
+
+            <FrameLayout
+                android:id="@+id/player_container_1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <com.agora.netless.syncplayer.misc.PlayerStateLayout
+                android:id="@+id/player_state_layout_1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/player_container_2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:padding="4dp" />
+            android:padding="4dp">
+
+            <FrameLayout
+                android:id="@+id/player_container_2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <com.agora.netless.syncplayer.misc.PlayerStateLayout
+                android:id="@+id/player_state_layout_2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
+
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -35,6 +56,11 @@
 
         <com.herewhite.sdk.WhiteboardView
             android:id="@+id/whiteboard_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.agora.netless.syncplayer.misc.PlayerStateLayout
+            android:id="@+id/player_state_layout_3"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </androidx.cardview.widget.CardView>

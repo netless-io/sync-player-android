@@ -1,12 +1,16 @@
 package com.agora.netless.syncplayer
 
+import android.view.ViewGroup
+
 class OffsetPlayer constructor(
     private val player: AtomPlayer,
     private val offset: Long,
 ) : AbstractAtomPlayer() {
     private val fakePlayer = FakePlayer(offset)
+    private var nextPlaying = false;
 
     init {
+        fakePlayer.ignorePlayWhenEnd = false
         fakePlayer.addPlayerListener(object : AtomPlayerListener {
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
                 if (position < offset) {
@@ -85,6 +89,7 @@ class OffsetPlayer constructor(
                 notifyChanged {
                     it.onSeekTo(this@OffsetPlayer, timeMs + offset)
                 }
+                adjustPlayer(timeMs + offset)
             }
         })
     }
@@ -103,39 +108,20 @@ class OffsetPlayer constructor(
         }
     }
 
-    override fun prepare() {
-        if (!isPreparing) {
-            player.prepare()
-            fakePlayer.prepare()
-            targetPhase = AtomPlayerPhase.Ready
-        }
+    override fun prepareInternal() {
+        player.prepare()
+        fakePlayer.prepare()
     }
 
-    override fun play() {
-        if (currentPhase == AtomPlayerPhase.Idle) {
-            prepare()
-        } else {
-            playInternal()
-        }
-        targetPhase = AtomPlayerPhase.Playing
-    }
-
-    private fun playInternal() {
-        if (fakePlayer.currentPosition() < offset) {
-            fakePlayer.play()
-        } else {
+    override fun playInternal() {
+        if (nextPlaying) {
             player.play()
+        } else {
+            fakePlayer.play()
         }
     }
 
-    override fun pause() {
-        if (isPlaying) {
-            pauseInternal()
-        }
-        targetPhase = AtomPlayerPhase.Paused
-    }
-
-    private fun pauseInternal() {
+    override fun pauseInternal() {
         fakePlayer.pause()
         player.pause()
     }
@@ -152,23 +138,24 @@ class OffsetPlayer constructor(
         } else {
             player.seekTo(timeMs - offset)
         }
-        adjustPlayer(timeMs)
     }
 
     private fun adjustPlayer(position: Long) {
         if (!isPlaying) {
             return
         }
-        if (position > offset) {
+        nextPlaying = position >= offset
+        if (position >= offset) {
             fakePlayer.pause()
             player.play()
         } else {
-            fakePlayer.play()
             player.pause()
+            fakePlayer.play()
         }
     }
 
     private fun playNext() {
+        nextPlaying = true
         player.seekTo(0)
         player.play()
     }
@@ -185,5 +172,9 @@ class OffsetPlayer constructor(
 
     override fun duration(): Long {
         return player.duration() + fakePlayer.duration()
+    }
+
+    override fun setPlayerContainer(container: ViewGroup) {
+        player.setPlayerContainer(container)
     }
 }

@@ -22,12 +22,12 @@ class VideoPlayer constructor(
     private val videoPlayerView: VideoPlayerView by lazy {
         VideoPlayerView(context)
     }
+
     private var dataSourceFactory = DefaultDataSourceFactory(
         context,
         Util.getUserAgent(context, "SyncPlayer")
     )
     private val positionNotifier = PositionNotifier(handler, this)
-    private var playerError: Exception? = null
 
     init {
         exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
@@ -52,17 +52,6 @@ class VideoPlayer constructor(
             )
         )
         videoPlayerView.setPlayer(exoPlayer)
-    }
-
-    override fun prepare() {
-        if (!isPreparing) {
-            targetPhase = AtomPlayerPhase.Ready
-            playerError = null
-
-            val mediaSource = createMediaSource(Uri.parse(videoUrl))
-            exoPlayer.setMediaSource(mediaSource)
-            exoPlayer.prepare()
-        }
     }
 
     private fun createMediaSource(uri: Uri): MediaSource {
@@ -92,53 +81,37 @@ class VideoPlayer constructor(
         }
     }
 
-    override val isPlaying: Boolean
-        get() = exoPlayer.isPlaying
-
-    override val isError: Boolean
-        get() = playerError != null
-
     override var playbackSpeed = 1.0f
         set(value) {
             field = value
             exoPlayer.playbackParameters = PlaybackParameters(value)
         }
 
-    override fun play() {
-        if (currentPhase == AtomPlayerPhase.End) {
-            return
-        }
-        if (currentPhase == AtomPlayerPhase.Idle) {
-            prepare()
-        } else {
-            playInternal()
-        }
-        targetPhase = AtomPlayerPhase.Playing
+    override fun prepareInternal() {
+        val mediaSource = createMediaSource(Uri.parse(videoUrl))
+        exoPlayer.setMediaSource(mediaSource)
+        exoPlayer.prepare()
     }
 
-    private fun playInternal() {
+    override fun playInternal() {
         exoPlayer.playWhenReady = true
     }
 
-    override fun pause() {
-        handler.post {
-            pauseInternal()
-            targetPhase = AtomPlayerPhase.Paused
-        }
-    }
-
-    private fun pauseInternal() {
+    override fun pauseInternal() {
         exoPlayer.playWhenReady = false
     }
 
     override fun release() {
         exoPlayer.release()
-        currentPhase == AtomPlayerPhase.Idle
-        targetPhase == AtomPlayerPhase.Idle
+        currentPhase = AtomPlayerPhase.Idle
+        targetPhase = AtomPlayerPhase.Idle
     }
 
     override fun currentPosition(): Long {
-        return exoPlayer.currentPosition
+        if (isInPlaybackState()) {
+            return exoPlayer.currentPosition
+        }
+        return 0
     }
 
     override fun duration(): Long {
@@ -146,10 +119,6 @@ class VideoPlayer constructor(
             return exoPlayer.duration
         }
         return -1
-    }
-
-    private fun isInPlaybackState(): Boolean {
-        return currentPhase != AtomPlayerPhase.Idle
     }
 
     override fun onPlaybackStateChanged(state: Int) {
@@ -168,8 +137,8 @@ class VideoPlayer constructor(
                 if (currentPhase == AtomPlayerPhase.Idle) {
                     updatePlayerPhase(AtomPlayerPhase.Ready)
                 }
-                if (targetPhase == AtomPlayerPhase.Playing ||
-                    targetPhase == AtomPlayerPhase.Paused
+                if (targetPhase == AtomPlayerPhase.Playing
+                    || targetPhase == AtomPlayerPhase.Paused
                 ) {
                     exoPlayer.playWhenReady = targetPhase == AtomPlayerPhase.Playing
                     updatePlayerPhase(targetPhase)
@@ -216,9 +185,5 @@ class VideoPlayer constructor(
                 it.onSeekTo(this, pos)
             }
         }
-    }
-
-    override fun onEvents(player: Player, events: Player.Events) {
-        // Log.d("$name onEvents $events")
     }
 }

@@ -1,5 +1,7 @@
 package com.agora.netless.syncplayer
 
+import android.view.ViewGroup
+
 /**
  * 选取一个播放器的多段
  */
@@ -34,11 +36,33 @@ class SelectionPlayer(
             }
 
             override fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
-                if (phaseChange == AtomPlayerPhase.Ready) {
-                    currentSelection = 0
-                    atomPlayer.seekTo(segInter[0].start)
+                when (phaseChange) {
+                    AtomPlayerPhase.Idle -> {
+
+                    }
+                    AtomPlayerPhase.Ready -> {
+                        currentSelection = 0
+                        atomPlayer.seekTo(segInter[0].start)
+                        updatePlayerPhase(AtomPlayerPhase.Ready)
+                        if (targetPhase == AtomPlayerPhase.Playing) {
+                            atomPlayer.play()
+                        }
+                        if (targetPhase == AtomPlayerPhase.Paused) {
+                            atomPlayer.pause()
+                        }
+                    }
+                    AtomPlayerPhase.Paused, AtomPlayerPhase.Playing -> {
+                        updatePlayerPhase(phaseChange)
+                    }
+                    AtomPlayerPhase.Buffering -> {
+                        if (atomPlayer.isPlaying) {
+                            updatePlayerPhase(AtomPlayerPhase.Buffering)
+                        }
+                    }
+                    AtomPlayerPhase.End -> {
+                        updatePlayerPhase(AtomPlayerPhase.End)
+                    }
                 }
-                updatePlayerPhase(phaseChange)
             }
 
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
@@ -60,15 +84,15 @@ class SelectionPlayer(
         })
     }
 
-    override fun prepare() {
+    override fun prepareInternal() {
         atomPlayer.prepare()
     }
 
-    override fun play() {
+    override fun playInternal() {
         atomPlayer.play()
     }
 
-    override fun pause() {
+    override fun pauseInternal() {
         atomPlayer.pause()
     }
 
@@ -106,6 +130,10 @@ class SelectionPlayer(
 
     override fun duration(): Long {
         return segOuter.last().end
+    }
+
+    override fun setPlayerContainer(container: ViewGroup) {
+        atomPlayer.setPlayerContainer(container)
     }
 }
 

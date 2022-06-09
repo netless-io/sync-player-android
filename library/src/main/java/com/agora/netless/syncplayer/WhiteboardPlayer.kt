@@ -1,7 +1,7 @@
 package com.agora.netless.syncplayer
 
+import com.herewhite.sdk.AbstractPlayerEventListener
 import com.herewhite.sdk.Player
-import com.herewhite.sdk.PlayerListener
 import com.herewhite.sdk.domain.PlayerPhase
 import com.herewhite.sdk.domain.PlayerState
 import com.herewhite.sdk.domain.SDKError
@@ -9,57 +9,6 @@ import com.herewhite.sdk.domain.SDKError
 class WhiteboardPlayer(
     private val player: Player
 ) : AbstractAtomPlayer() {
-    init {
-        player.addPlayerListener(object : PlayerListener {
-            override fun onPhaseChanged(phase: PlayerPhase) {
-                Log.d("[$name] interPlayer onPhaseChanged $phase")
-
-                handler.post { onWhitePhaseChanged(phase) }
-            }
-
-            override fun onLoadFirstFrame() {
-                Log.d("[$name] interPlayer onLoadFirstFrame")
-                handler.post {
-                    updatePlayerPhase(AtomPlayerPhase.Ready)
-                    if (targetPhase == AtomPlayerPhase.Ready || targetPhase == AtomPlayerPhase.Paused) {
-                        player.pause()
-                    }
-                    player.playbackSpeed = playbackSpeed.toDouble()
-                }
-            }
-
-            override fun onSliceChanged(slice: String?) {
-
-            }
-
-            override fun onPlayerStateChanged(modifyState: PlayerState) {
-
-            }
-
-            override fun onStoppedWithError(error: SDKError) {
-
-            }
-
-            override fun onScheduleTimeChanged(time: Long) {
-                // Log.d("[$name] onScheduleTimeChanged $time")
-
-                notifyChanged {
-                    it.onPositionChanged(this@WhiteboardPlayer, time)
-                }
-            }
-
-            override fun onCatchErrorWhenAppendFrame(error: SDKError) {
-
-            }
-
-            override fun onCatchErrorWhenRender(error: SDKError) {
-
-            }
-        })
-    }
-
-    override val isPlaying: Boolean
-        get() = currentPhase == AtomPlayerPhase.Playing
 
     override var playbackSpeed = 1.0f
         set(value) {
@@ -67,25 +16,76 @@ class WhiteboardPlayer(
             player.playbackSpeed = value.toDouble()
         }
 
-    override fun prepare() {
-        if (!isPreparing) {
-            player.play()
-            targetPhase = AtomPlayerPhase.Ready
+    private val interPlayerListener = object : AbstractPlayerEventListener() {
+        override fun onPhaseChanged(phase: PlayerPhase) {
+            Log.d("[$name] interPlayer onPhaseChanged $phase")
+            handler.post { handleInterPlayerPhase(phase) }
+        }
+
+        private fun handleInterPlayerPhase(interPhase: PlayerPhase) {
+            when (interPhase) {
+                PlayerPhase.buffering -> {
+                    if (currentPhase != AtomPlayerPhase.Idle) {
+                        updatePlayerPhase(AtomPlayerPhase.Buffering)
+                    }
+                }
+                PlayerPhase.pause, PlayerPhase.playing -> {
+                    if (targetPhase == AtomPlayerPhase.Playing ||
+                        targetPhase == AtomPlayerPhase.Paused
+                    ) {
+                        updatePlayerPhase(targetPhase)
+                    }
+                }
+                PlayerPhase.stopped, PlayerPhase.ended -> {
+                    updatePlayerPhase(AtomPlayerPhase.End)
+                }
+                else -> {}
+            }
+        }
+
+        override fun onLoadFirstFrame() {
+            Log.d("[$name] interPlayer onLoadFirstFrame")
+
+            handler.post {
+                updatePlayerPhase(AtomPlayerPhase.Ready)
+                if (targetPhase == AtomPlayerPhase.Ready || targetPhase == AtomPlayerPhase.Paused) {
+                    player.pause()
+                }
+                player.playbackSpeed = playbackSpeed.toDouble()
+            }
+        }
+
+        override fun onPlayerStateChanged(modifyState: PlayerState) {
+
+        }
+
+        override fun onStoppedWithError(error: SDKError) {
+
+        }
+
+        override fun onScheduleTimeChanged(time: Long) {
+            // Log.d("[$name] interPlayer onScheduleTimeChanged $time")
+
+            notifyChanged {
+                it.onPositionChanged(this@WhiteboardPlayer, time)
+            }
         }
     }
 
-    override fun play() {
-        if (currentPhase == AtomPlayerPhase.Idle) {
-            prepare()
-        } else {
-            player.play()
-        }
-        targetPhase = AtomPlayerPhase.Playing
+    init {
+        player.addPlayerListener(interPlayerListener)
     }
 
-    override fun pause() {
+    override fun prepareInternal() {
+        player.play()
+    }
+
+    override fun playInternal() {
+        player.play()
+    }
+
+    override fun pauseInternal() {
         player.pause()
-        targetPhase = AtomPlayerPhase.Paused
     }
 
     override fun release() {
@@ -105,25 +105,5 @@ class WhiteboardPlayer(
 
     override fun duration(): Long {
         return player.playerTimeInfo.timeDuration
-    }
-
-    private fun onWhitePhaseChanged(phase: PlayerPhase) {
-        when (phase) {
-            PlayerPhase.buffering -> {
-                if (currentPhase != AtomPlayerPhase.Idle) {
-                    updatePlayerPhase(AtomPlayerPhase.Buffering)
-                }
-            }
-            PlayerPhase.pause, PlayerPhase.playing -> {
-                if (targetPhase == AtomPlayerPhase.Playing ||
-                    targetPhase == AtomPlayerPhase.Paused
-                ) {
-                    updatePlayerPhase(targetPhase)
-                }
-            }
-            PlayerPhase.stopped, PlayerPhase.ended -> {
-                updatePlayerPhase(AtomPlayerPhase.End)
-            }
-        }
     }
 }

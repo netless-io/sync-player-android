@@ -43,7 +43,7 @@ public class VideoPlayerActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void onPhaseChanged(@NonNull AtomPlayer atomPlayer, @NonNull AtomPlayerPhase phase) {
                 if (phase == AtomPlayerPhase.Ready) {
-                    seekBar.setMax((int) atomPlayer.duration() * 2);
+                    seekBar.setMax((int) atomPlayer.duration());
                 }
             }
 

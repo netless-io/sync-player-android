@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
+import com.agora.netless.syncplayer.misc.PlayerStateLayout;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 import com.herewhite.sdk.AbstractPlayerEventListener;
 import com.herewhite.sdk.Player;
@@ -21,10 +22,17 @@ import com.herewhite.sdk.domain.PlayerConfiguration;
 import com.herewhite.sdk.domain.Promise;
 import com.herewhite.sdk.domain.SDKError;
 
+import java.util.Arrays;
+
 public class TriplePlayerActivity extends BaseActivity implements View.OnClickListener {
     private WhiteboardView whiteboardView;
     private FrameLayout playerContainer1;
     private FrameLayout playerContainer2;
+
+    private PlayerStateLayout playerStateLayout1;
+    private PlayerStateLayout playerStateLayout2;
+    private PlayerStateLayout playerStateLayout3;
+
     private ClusterPlayer clusterPlayer;
 
     private SeekBar seekBar;
@@ -42,7 +50,7 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
         WhiteSdk whiteSdk = new WhiteSdk(whiteboardView, this, new WhiteSdkConfiguration(Constant.SDK_APP_ID, true));
 
         PlayerConfiguration playerConfiguration = new PlayerConfiguration(Constant.ROOM_UUID, Constant.ROOM_TOKEN);
-        playerConfiguration.setDuration(600_000L);
+        playerConfiguration.setDuration(120_000L);
 
         whiteSdk.createPlayer(playerConfiguration, new AbstractPlayerEventListener() {
                 },
@@ -64,16 +72,24 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
         VideoPlayer videoPlayer1 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
         videoPlayer1.setName("videoPlayer1");
         videoPlayer1.setPlayerContainer(playerContainer1);
+        playerStateLayout1.attachPlayer(videoPlayer1);
 
-        VideoPlayer videoPlayer2 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
+        AtomPlayer videoPlayer2 = SyncPlayer.selection(
+                new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]),
+                new SelectionOptions(Arrays.asList(
+                        new Selection(5_000, 20_000),
+                        new Selection(20_000, 120_000))
+                ));
         videoPlayer2.setName("videoPlayer2");
         videoPlayer2.setPlayerContainer(playerContainer2);
+        playerStateLayout2.attachPlayer(videoPlayer2);
 
         ClusterPlayer combinePlayer = new ClusterPlayer(videoPlayer1, videoPlayer2);
         combinePlayer.setName("combinePlayer");
 
         WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
         whiteboardPlayer.setName("whiteboardPlayer");
+        playerStateLayout2.attachPlayer(whiteboardPlayer);
 
         clusterPlayer = new ClusterPlayer(whiteboardPlayer, combinePlayer);
         clusterPlayer.addPlayerListener(new AtomPlayerListener() {
@@ -101,8 +117,13 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
 
     private void initView() {
         whiteboardView = findViewById(R.id.whiteboard_view);
+
         playerContainer1 = findViewById(R.id.player_container_1);
         playerContainer2 = findViewById(R.id.player_container_2);
+
+        playerStateLayout1 = findViewById(R.id.player_state_layout_1);
+        playerStateLayout2 = findViewById(R.id.player_state_layout_2);
+        playerStateLayout3 = findViewById(R.id.player_state_layout_3);
 
         findViewById(R.id.button_play).setOnClickListener(this);
         findViewById(R.id.button_pause).setOnClickListener(this);
@@ -133,12 +154,19 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
                 }
             }
         });
+        disableBtn();
     }
 
     private void enableBtn() {
         findViewById(R.id.button_play).setEnabled(true);
         findViewById(R.id.button_pause).setEnabled(true);
         findViewById(R.id.button_reset).setEnabled(true);
+    }
+
+    private void disableBtn() {
+        findViewById(R.id.button_play).setEnabled(false);
+        findViewById(R.id.button_pause).setEnabled(false);
+        findViewById(R.id.button_reset).setEnabled(false);
     }
 
     @Override

@@ -44,45 +44,32 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
     init {
         addPlayerListener(object : AtomPlayerListener {
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
-                if (position > duration) {
-                    pause()
+                if (position >= duration) {
+                    pauseInternal()
                     updatePlayerPhase(AtomPlayerPhase.End)
                 }
             }
         })
     }
 
-    override fun prepare() {
-        if (!isPreparing) {
-            updatePlayerPhase(AtomPlayerPhase.Ready)
-        }
+    override fun prepareInternal() {
+        updatePlayerPhase(AtomPlayerPhase.Ready)
     }
 
-    override fun play() {
-        if (currentPhase == AtomPlayerPhase.Idle) {
-            prepare()
-        } else {
-            playInternal()
-        }
-        targetPhase = AtomPlayerPhase.Playing
-    }
-
-    private fun playInternal() {
+    override fun playInternal() {
         lastPlay = System.currentTimeMillis()
         positionNotifier.start()
         updatePlayerPhase(AtomPlayerPhase.Playing)
     }
 
-    override fun pause() {
-        if (isPlaying) {
-            startPosition += System.currentTimeMillis() - lastPlay
-            positionNotifier.stop()
-            updatePlayerPhase(AtomPlayerPhase.Paused)
-        }
+    override fun pauseInternal() {
+        startPosition += System.currentTimeMillis() - lastPlay
+        positionNotifier.stop()
+        updatePlayerPhase(AtomPlayerPhase.Paused)
     }
 
     override fun release() {
-
+        positionNotifier.stop()
     }
 
     override fun seekTo(timeMs: Long) {

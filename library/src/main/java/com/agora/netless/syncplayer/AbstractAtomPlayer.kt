@@ -8,11 +8,15 @@ import java.util.concurrent.CopyOnWriteArraySet
 abstract class AbstractAtomPlayer : AtomPlayer {
     override var name: String = this.javaClass.simpleName
 
+    internal var ignorePlayWhenEnd: Boolean = true
+
     internal val handler = Handler(Looper.getMainLooper())
 
     override var currentPhase = AtomPlayerPhase.Idle
 
     internal var targetPhase: AtomPlayerPhase = AtomPlayerPhase.Idle
+
+    internal var playerError: Exception? = null
 
     override val isPlaying: Boolean
         get() = currentPhase == AtomPlayerPhase.Playing
@@ -20,15 +24,46 @@ abstract class AbstractAtomPlayer : AtomPlayer {
     internal val isPreparing: Boolean
         get() = currentPhase == AtomPlayerPhase.Idle && targetPhase == AtomPlayerPhase.Ready
 
-    override val isError: Boolean = false
+    override val isError: Boolean
+        get() = playerError != null
+
+    internal fun isInPlaybackState(): Boolean = currentPhase != AtomPlayerPhase.Idle
 
     override var playbackSpeed = 1.0f
 
-    abstract override fun prepare()
+    override fun prepare() {
+        if (!isPreparing) {
+            targetPhase = AtomPlayerPhase.Ready
+            playerError = null
 
-    abstract override fun play()
+            prepareInternal()
+        }
+    }
 
-    abstract override fun pause()
+    override fun play() {
+        if (currentPhase == AtomPlayerPhase.End && ignorePlayWhenEnd) {
+            return
+        }
+        if (currentPhase == AtomPlayerPhase.Idle) {
+            prepare()
+        } else {
+            playInternal()
+        }
+        targetPhase = AtomPlayerPhase.Playing
+    }
+
+    override fun pause() {
+        if (isPlaying) {
+            pauseInternal()
+        }
+        targetPhase = AtomPlayerPhase.Paused
+    }
+
+    open fun prepareInternal() {}
+
+    open fun playInternal() {}
+
+    open fun pauseInternal() {}
 
     override fun stop() {
         seekTo(0)
@@ -62,7 +97,7 @@ abstract class AbstractAtomPlayer : AtomPlayer {
     }
 
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
-        Log.d("[$name] try updatePlayerPhase to $newPhase, from $currentPhase")
+        Log.d("[$name] updatePlayerPhase to $newPhase, from $currentPhase")
         if (currentPhase != newPhase) {
             currentPhase = newPhase
             notifyChanged {

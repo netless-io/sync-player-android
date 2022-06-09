@@ -29,31 +29,22 @@ class ClusterPlayer constructor(
             }
         }
 
-    override fun prepare() {
-        if (!isPreparing) {
-            targetPhase = AtomPlayerPhase.Ready
-            players.forEach {
-                it.prepare()
-            }
+    override fun prepareInternal() {
+        players.forEach {
+            it.prepare()
         }
     }
 
-    override fun play() {
-        if (currentPhase == AtomPlayerPhase.Idle) {
-            prepare()
-        } else {
-            players.forEach {
-                it.play()
-            }
+    override fun playInternal() {
+        players.forEach {
+            it.play()
         }
-        targetPhase = AtomPlayerPhase.Playing
     }
 
-    override fun pause() {
+    override fun pauseInternal() {
         players.forEach {
             it.pause()
         }
-        targetPhase = AtomPlayerPhase.Paused
     }
 
     override fun release() {
@@ -64,8 +55,9 @@ class ClusterPlayer constructor(
 
     override fun seekTo(timeMs: Long) {
         seeking = 2
-        players[0].seekTo(timeMs)
-        players[1].seekTo(timeMs)
+        players.forEach {
+            it.seekTo(timeMs)
+        }
         targetPosition = timeMs
     }
 

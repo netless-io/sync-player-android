@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
+import com.agora.netless.syncplayer.misc.PlayerStateLayout;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 import com.herewhite.sdk.AbstractPlayerEventListener;
 import com.herewhite.sdk.Player;
@@ -21,6 +22,7 @@ import com.herewhite.sdk.domain.SDKError;
 
 public class WhiteboardPlayerActivity extends BaseActivity implements View.OnClickListener {
     private WhiteboardView whiteboardView;
+    private PlayerStateLayout playerStateLayout;
     private SeekBar seekBar;
 
     private WhiteboardPlayer whiteboardPlayer;
@@ -60,6 +62,7 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
         whiteboardPlayer = new WhiteboardPlayer(player);
         whiteboardPlayer.setName("whiteboardPlayer");
 
+        playerStateLayout.attachPlayer(whiteboardPlayer);
         whiteboardPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
@@ -84,6 +87,7 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
 
     private void initView() {
         whiteboardView = findViewById(R.id.whiteboard_view);
+        playerStateLayout = findViewById(R.id.player_state_layout);
 
         findViewById(R.id.button_play).setOnClickListener(this);
         findViewById(R.id.button_pause).setOnClickListener(this);
