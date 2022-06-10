@@ -43,5 +43,6 @@
             android:name=".SelectionPlayerActivity"
             android:exported="true" />
         <activity android:name=".WhiteboardSelectionPlayerActivity" />
+        <activity android:name=".WhiteSelectionClusterPlayerActivity" />
     </application>
 </manifest>

@@ -53,7 +53,7 @@ abstract class AbstractAtomPlayer : AtomPlayer {
     }
 
     override fun pause() {
-        if (isPlaying) {
+        if (isInPlaybackState()) {
             pauseInternal()
         }
         targetPhase = AtomPlayerPhase.Paused

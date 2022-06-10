@@ -17,8 +17,8 @@ import com.google.android.exoplayer2.util.Util
 class VideoPlayer constructor(
     context: Context,
     private val videoUrl: String,
-) : AbstractAtomPlayer(), Player.Listener {
-    private var exoPlayer: SimpleExoPlayer
+) : AbstractAtomPlayer() {
+    private lateinit var exoPlayer: SimpleExoPlayer
     private val videoPlayerView: VideoPlayerView by lazy {
         VideoPlayerView(context)
     }
@@ -27,11 +27,84 @@ class VideoPlayer constructor(
         context,
         Util.getUserAgent(context, "SyncPlayer")
     )
+
     private val positionNotifier = PositionNotifier(handler, this)
+
+    private val interPlayerListener = object : Player.Listener {
+        override fun onPlaybackStateChanged(state: Int) {
+            Log.d("[$name] interPlayer onPlaybackStateChanged $state")
+
+            when (state) {
+                Player.STATE_IDLE -> {
+                    updatePlayerPhase(AtomPlayerPhase.Idle)
+                }
+                Player.STATE_BUFFERING -> {
+                    if (currentPhase != AtomPlayerPhase.Idle) {
+                        updatePlayerPhase(AtomPlayerPhase.Buffering)
+                    }
+                }
+                Player.STATE_READY -> {
+                    if (currentPhase == AtomPlayerPhase.Idle) {
+                        updatePlayerPhase(AtomPlayerPhase.Ready)
+                    }
+                    if (targetPhase == AtomPlayerPhase.Playing
+                        || targetPhase == AtomPlayerPhase.Paused
+                    ) {
+                        exoPlayer.playWhenReady = targetPhase == AtomPlayerPhase.Playing
+                        updatePlayerPhase(targetPhase)
+                    }
+                }
+                Player.STATE_ENDED -> {
+                    updatePlayerPhase(AtomPlayerPhase.End)
+                }
+            }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            Log.d("[$name] interPlayer onPlayWhenReadyChanged $playWhenReady, $reason")
+
+            if (playWhenReady) {
+                updatePlayerPhase(AtomPlayerPhase.Playing)
+            } else {
+                updatePlayerPhase(AtomPlayerPhase.Paused)
+            }
+        }
+
+        override fun onPlayerError(error: ExoPlaybackException) {
+            Log.d("[$name] interPlayer onPlayerError ${error.type} ${error.message}")
+
+            playerError = error
+        }
+
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            Log.d("[$name] interPlayer onIsPlayingChanged $isPlaying")
+
+            if (isPlaying) {
+                positionNotifier.start()
+            } else {
+                positionNotifier.stop()
+            }
+        }
+
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
+        ) {
+            if (reason == Player.DISCONTINUITY_REASON_SEEK) {
+                Log.d("[$name] interPlayer onSeekEnd: ${exoPlayer.currentPosition}")
+                val pos = exoPlayer.currentPosition
+                notifyChanged {
+                    it.onSeekTo(this@VideoPlayer, pos)
+                }
+            }
+        }
+    }
 
     init {
         exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
-        exoPlayer.addListener(this)
+        exoPlayer.addListener(interPlayerListener)
+        // disable handleAudioFocus to support multiple players
         exoPlayer.setAudioAttributes(AudioAttributes.DEFAULT, false)
         exoPlayer.playWhenReady = false
     }
@@ -103,8 +176,6 @@ class VideoPlayer constructor(
 
     override fun release() {
         exoPlayer.release()
-        currentPhase = AtomPlayerPhase.Idle
-        targetPhase = AtomPlayerPhase.Idle
     }
 
     override fun currentPosition(): Long {
@@ -119,71 +190,5 @@ class VideoPlayer constructor(
             return exoPlayer.duration
         }
         return -1
-    }
-
-    override fun onPlaybackStateChanged(state: Int) {
-        Log.d("[$name] onPlaybackStateChanged $state")
-
-        when (state) {
-            Player.STATE_IDLE -> {
-                updatePlayerPhase(AtomPlayerPhase.Idle)
-            }
-            Player.STATE_BUFFERING -> {
-                if (currentPhase != AtomPlayerPhase.Idle) {
-                    updatePlayerPhase(AtomPlayerPhase.Buffering)
-                }
-            }
-            Player.STATE_READY -> {
-                if (currentPhase == AtomPlayerPhase.Idle) {
-                    updatePlayerPhase(AtomPlayerPhase.Ready)
-                }
-                if (targetPhase == AtomPlayerPhase.Playing
-                    || targetPhase == AtomPlayerPhase.Paused
-                ) {
-                    exoPlayer.playWhenReady = targetPhase == AtomPlayerPhase.Playing
-                    updatePlayerPhase(targetPhase)
-                }
-            }
-            Player.STATE_ENDED -> {
-                updatePlayerPhase(AtomPlayerPhase.End)
-            }
-        }
-    }
-
-    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        Log.d("[$name] onPlayWhenReadyChanged $playWhenReady, $reason")
-        if (playWhenReady) {
-            updatePlayerPhase(AtomPlayerPhase.Playing)
-        } else {
-            updatePlayerPhase(AtomPlayerPhase.Paused)
-        }
-    }
-
-    override fun onPlayerError(error: ExoPlaybackException) {
-        Log.d("[$name] onPlayerError ${error.type} ${error.message}")
-        this.playerError = error
-    }
-
-    override fun onIsPlayingChanged(isPlaying: Boolean) {
-        Log.d("[$name] onIsPlayingChanged $isPlaying")
-        if (isPlaying) {
-            positionNotifier.start()
-        } else {
-            positionNotifier.stop()
-        }
-    }
-
-    override fun onPositionDiscontinuity(
-        oldPosition: Player.PositionInfo,
-        newPosition: Player.PositionInfo,
-        reason: Int
-    ) {
-        if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-            Log.d("[$name] onSeekEnd: ${exoPlayer.currentPosition}")
-            val pos = exoPlayer.currentPosition
-            notifyChanged {
-                it.onSeekTo(this, pos)
-            }
-        }
     }
 }

@@ -34,7 +34,7 @@ android {
 
 dependencies {
     // Agora
-    implementation 'com.github.netless-io:whiteboard-android:2.16.22'
+    implementation 'com.github.netless-io:whiteboard-android:2.16.23'
     implementation 'androidx.test.ext:junit-ktx:1.1.3'
     implementation 'androidx.test:monitor:1.5.0'
 

@@ -18,13 +18,14 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity {
     private final List<UseCase> ALL_USE_CASE = Arrays.asList(
+            new UseCase("WhiteSelectionClusterPlayer", "", WhiteSelectionClusterPlayerActivity.class),
+            new UseCase("TriplePlayer", "", TriplePlayerActivity.class),
+            new UseCase("ClusterPlayer", "", ClusterPlayerActivity.class),
             new UseCase("WhiteboardSelectionPlayer", "", WhiteboardSelectionPlayerActivity.class),
             new UseCase("SelectionPlayer", "", SelectionPlayerActivity.class),
             new UseCase("OffsetPlayer", "", OffsetPlayerActivity.class),
-            new UseCase("VideoPlayer", "", VideoPlayerActivity.class),
             new UseCase("WhiteboardPlayer", "", WhiteboardPlayerActivity.class),
-            new UseCase("ClusterPlayer", "", ClusterPlayerActivity.class),
-            new UseCase("TriplePlayer", "", TriplePlayerActivity.class)
+            new UseCase("VideoPlayer", "", VideoPlayerActivity.class)
     );
 
     @Override

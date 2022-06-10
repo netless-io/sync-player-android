@@ -1,10 +1,10 @@
 package com.agora.netless.syncplayer
 
 class ClusterPlayer constructor(
-    private val one: AtomPlayer,
-    private val two: AtomPlayer,
+    private val aPlayer: AtomPlayer,
+    private val bPlayer: AtomPlayer,
 ) : AbstractAtomPlayer() {
-    private var players: Array<AtomPlayer> = arrayOf(one, two)
+    private var players: Array<AtomPlayer> = arrayOf(aPlayer, bPlayer)
     private var pauseReason: Array<Boolean> = arrayOf(false, false)
 
     private var seeking = 0
@@ -13,8 +13,9 @@ class ClusterPlayer constructor(
 
     init {
         val atomPlayerListener = LocalAtomPlayerListener()
-        players[0].addPlayerListener(atomPlayerListener)
-        players[1].addPlayerListener(atomPlayerListener)
+        players.forEach {
+            it.addPlayerListener(atomPlayerListener)
+        }
     }
 
     private fun other(player: AtomPlayer) = if (players[0] == player) players[1] else players[0]
@@ -70,7 +71,7 @@ class ClusterPlayer constructor(
     }
 
     override fun duration(): Long {
-        return one.duration().coerceAtLeast(two.duration())
+        return aPlayer.duration().coerceAtLeast(bPlayer.duration())
     }
 
     private fun pauseWhenBuffering(atomPlayer: AtomPlayer) {
@@ -108,13 +109,11 @@ class ClusterPlayer constructor(
                 AtomPlayerPhase.Ready -> {
                     if (other(atomPlayer).currentPhase == AtomPlayerPhase.Ready) {
                         updatePlayerPhase(AtomPlayerPhase.Ready)
-                        players.forEach {
-                            if (targetPhase == AtomPlayerPhase.Playing) {
-                                it.play()
-                            }
-                            if (targetPhase == AtomPlayerPhase.Paused) {
-                                it.pause()
-                            }
+                        if (targetPhase == AtomPlayerPhase.Playing) {
+                            playInternal()
+                        }
+                        if (targetPhase == AtomPlayerPhase.Paused) {
+                            pauseInternal()
                         }
                     }
                 }

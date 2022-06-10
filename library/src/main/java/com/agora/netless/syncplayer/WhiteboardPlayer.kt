@@ -3,8 +3,6 @@ package com.agora.netless.syncplayer
 import com.herewhite.sdk.AbstractPlayerEventListener
 import com.herewhite.sdk.Player
 import com.herewhite.sdk.domain.PlayerPhase
-import com.herewhite.sdk.domain.PlayerState
-import com.herewhite.sdk.domain.SDKError
 
 class WhiteboardPlayer(
     private val player: Player
@@ -29,11 +27,14 @@ class WhiteboardPlayer(
                         updatePlayerPhase(AtomPlayerPhase.Buffering)
                     }
                 }
-                PlayerPhase.pause, PlayerPhase.playing -> {
-                    if (targetPhase == AtomPlayerPhase.Playing ||
-                        targetPhase == AtomPlayerPhase.Paused
-                    ) {
-                        updatePlayerPhase(targetPhase)
+                PlayerPhase.pause -> {
+                    if (targetPhase == AtomPlayerPhase.Paused) {
+                        updatePlayerPhase(AtomPlayerPhase.Paused)
+                    }
+                }
+                PlayerPhase.playing -> {
+                    if (targetPhase == AtomPlayerPhase.Playing) {
+                        updatePlayerPhase(AtomPlayerPhase.Playing)
                     }
                 }
                 PlayerPhase.stopped, PlayerPhase.ended -> {
@@ -47,20 +48,12 @@ class WhiteboardPlayer(
             Log.d("[$name] interPlayer onLoadFirstFrame")
 
             handler.post {
+                player.playbackSpeed = playbackSpeed.toDouble()
                 updatePlayerPhase(AtomPlayerPhase.Ready)
                 if (targetPhase == AtomPlayerPhase.Ready || targetPhase == AtomPlayerPhase.Paused) {
                     player.pause()
                 }
-                player.playbackSpeed = playbackSpeed.toDouble()
             }
-        }
-
-        override fun onPlayerStateChanged(modifyState: PlayerState) {
-
-        }
-
-        override fun onStoppedWithError(error: SDKError) {
-
         }
 
         override fun onScheduleTimeChanged(time: Long) {
