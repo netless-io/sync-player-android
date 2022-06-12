@@ -2,6 +2,11 @@ package com.agora.netless.syncplayer
 
 import android.view.ViewGroup
 
+/**
+ * 接口说明
+ * play 为组合接口，用户可以用过调用 play 准备并启动播放，在 Ready｜Paused状态下，AtomPLayer调用 play 立刻切换 为 Playing状态，同时出发 Playing 状态回调
+ * pause
+ */
 interface AtomPlayer {
     /**
      * mostly，it's used for debug

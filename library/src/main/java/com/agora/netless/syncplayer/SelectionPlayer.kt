@@ -45,18 +45,41 @@ class SelectionPlayer(
                         atomPlayer.seekTo(segInter[0].start)
                         updatePlayerPhase(AtomPlayerPhase.Ready)
                         if (targetPhase == AtomPlayerPhase.Playing) {
-                            atomPlayer.play()
-                        }
-                        if (targetPhase == AtomPlayerPhase.Paused) {
-                            atomPlayer.pause()
+                            playInternal()
+                            updatePlayerPhase(AtomPlayerPhase.Playing)
+                        } else if (targetPhase == AtomPlayerPhase.Paused) {
+                            pauseInternal()
+                            updatePlayerPhase(AtomPlayerPhase.Paused)
                         }
                     }
-                    AtomPlayerPhase.Paused, AtomPlayerPhase.Playing -> {
-                        updatePlayerPhase(phaseChange)
+                    AtomPlayerPhase.Paused -> {
+                        when (currentPhase) {
+                            AtomPlayerPhase.Buffering -> {
+                                updatePlayerPhase(AtomPlayerPhase.Paused)
+                            }
+                            AtomPlayerPhase.Paused -> {
+                                // nothing
+                            }
+                            else -> {
+                                Log.w("[$name] onPaused when $currentPhase")
+                            }
+                        }
+                    }
+                    AtomPlayerPhase.Playing -> {
+                        if (currentPhase == AtomPlayerPhase.Buffering) {
+                            updatePlayerPhase(AtomPlayerPhase.Playing)
+                        } else {
+                            Log.w("[$name] onPlaying when $currentPhase")
+                            if (targetPhase == AtomPlayerPhase.Paused) {
+                                pauseInternal()
+                            }
+                        }
                     }
                     AtomPlayerPhase.Buffering -> {
-                        if (atomPlayer.isPlaying) {
+                        if (currentPhase == AtomPlayerPhase.Playing) {
                             updatePlayerPhase(AtomPlayerPhase.Buffering)
+                        } else if (currentPhase == AtomPlayerPhase.Paused) {
+                            pauseInternal()
                         }
                     }
                     AtomPlayerPhase.End -> {
@@ -67,7 +90,7 @@ class SelectionPlayer(
 
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
                 if (checkInternalEnd(position)) {
-                    atomPlayer.pause()
+                    pauseInternal()
                     updatePlayerPhase(AtomPlayerPhase.End)
                     return
                 }
@@ -100,7 +123,7 @@ class SelectionPlayer(
         atomPlayer.release()
     }
 
-    override fun seekTo(timeMs: Long) {
+    override fun seekToInternal(timeMs: Long) {
         val time = getInFromOut(timeMs)
         atomPlayer.seekTo(time)
     }
@@ -129,7 +152,10 @@ class SelectionPlayer(
     }
 
     override fun duration(): Long {
-        return segOuter.last().end
+        if (isInPlaybackState()) {
+            return segOuter.last().end
+        }
+        return -1
     }
 
     override fun setPlayerContainer(container: ViewGroup) {

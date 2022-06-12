@@ -39,19 +39,30 @@ class VideoPlayer constructor(
                     updatePlayerPhase(AtomPlayerPhase.Idle)
                 }
                 Player.STATE_BUFFERING -> {
-                    if (currentPhase != AtomPlayerPhase.Idle) {
+                    Log.d("[$name] onBuffering when $currentPhase")
+                    if (currentPhase == AtomPlayerPhase.Playing) {
                         updatePlayerPhase(AtomPlayerPhase.Buffering)
+                    } else if (currentPhase == AtomPlayerPhase.Paused) {
+                        pauseInternal()
                     }
                 }
                 Player.STATE_READY -> {
                     if (currentPhase == AtomPlayerPhase.Idle) {
+                        Log.d("[$name] onReady when $currentPhase")
                         updatePlayerPhase(AtomPlayerPhase.Ready)
-                    }
-                    if (targetPhase == AtomPlayerPhase.Playing
-                        || targetPhase == AtomPlayerPhase.Paused
-                    ) {
-                        exoPlayer.playWhenReady = targetPhase == AtomPlayerPhase.Playing
-                        updatePlayerPhase(targetPhase)
+                        if (targetPhase == AtomPlayerPhase.Playing) {
+                            playInternal()
+                            updatePlayerPhase(AtomPlayerPhase.Playing)
+                        } else if (targetPhase == AtomPlayerPhase.Paused) {
+                            pauseInternal()
+                            updatePlayerPhase(AtomPlayerPhase.Paused)
+                        }
+                    } else {
+                        if (exoPlayer.playWhenReady) {
+                            onInternalPlaying()
+                        } else {
+                            onInternalPaused()
+                        }
                     }
                 }
                 Player.STATE_ENDED -> {
@@ -60,25 +71,13 @@ class VideoPlayer constructor(
             }
         }
 
-        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-            Log.d("[$name] interPlayer onPlayWhenReadyChanged $playWhenReady, $reason")
-
-            if (playWhenReady) {
-                updatePlayerPhase(AtomPlayerPhase.Playing)
-            } else {
-                updatePlayerPhase(AtomPlayerPhase.Paused)
-            }
-        }
-
         override fun onPlayerError(error: ExoPlaybackException) {
             Log.d("[$name] interPlayer onPlayerError ${error.type} ${error.message}")
-
             playerError = error
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             Log.d("[$name] interPlayer onIsPlayingChanged $isPlaying")
-
             if (isPlaying) {
                 positionNotifier.start()
             } else {
@@ -96,7 +95,33 @@ class VideoPlayer constructor(
                 val pos = exoPlayer.currentPosition
                 notifyChanged {
                     it.onSeekTo(this@VideoPlayer, pos)
+                    it.onPositionChanged(this@VideoPlayer, pos)
                 }
+            }
+        }
+    }
+
+    private fun onInternalPaused() {
+        when (currentPhase) {
+            AtomPlayerPhase.Buffering -> {
+                updatePlayerPhase(AtomPlayerPhase.Paused)
+            }
+            AtomPlayerPhase.Paused -> {
+                // nothing
+            }
+            else -> {
+                Log.w("[$name] onPaused when $currentPhase")
+            }
+        }
+    }
+
+    private fun onInternalPlaying() {
+        if (currentPhase == AtomPlayerPhase.Buffering) {
+            updatePlayerPhase(AtomPlayerPhase.Playing)
+        } else {
+            Log.w("[$name] onPlaying when $currentPhase")
+            if (targetPhase == AtomPlayerPhase.Paused) {
+                pauseInternal()
             }
         }
     }
@@ -139,19 +164,8 @@ class VideoPlayer constructor(
         }
     }
 
-    override fun seekTo(timeMs: Long) {
-        if (isInPlaybackState() && timeMs < duration()) {
-            exoPlayer.seekTo(timeMs)
-        } else {
-            if (currentPhase != AtomPlayerPhase.End) {
-                pauseInternal()
-                updatePlayerPhase(AtomPlayerPhase.End)
-            }
-            notifyChanged {
-                it.onSeekTo(this, timeMs)
-                it.onPositionChanged(this, timeMs)
-            }
-        }
+    override fun seekToInternal(timeMs: Long) {
+        exoPlayer.seekTo(timeMs)
     }
 
     override var playbackSpeed = 1.0f

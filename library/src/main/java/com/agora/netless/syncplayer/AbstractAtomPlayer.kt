@@ -21,7 +21,7 @@ abstract class AbstractAtomPlayer : AtomPlayer {
     override val isPlaying: Boolean
         get() = currentPhase == AtomPlayerPhase.Playing
 
-    internal val isPreparing: Boolean
+    private val isPreparing: Boolean
         get() = currentPhase == AtomPlayerPhase.Idle && targetPhase == AtomPlayerPhase.Ready
 
     override val isError: Boolean
@@ -40,14 +40,35 @@ abstract class AbstractAtomPlayer : AtomPlayer {
         }
     }
 
+    /**
+     * play 方法为方便用户调用，设计成非原子操作，依据不同状态执行相应请求。
+     *
+     * Idle 组合类型下 Case（如 init，preparing，error）由 [prepare] 处理
+     *
+     */
     override fun play() {
-        if (currentPhase == AtomPlayerPhase.End && ignorePlayWhenEnd) {
-            return
-        }
-        if (currentPhase == AtomPlayerPhase.Idle) {
-            prepare()
-        } else {
-            playInternal()
+        when (currentPhase) {
+            AtomPlayerPhase.Idle -> {
+                prepare()
+            }
+            AtomPlayerPhase.Ready, AtomPlayerPhase.Buffering, AtomPlayerPhase.Paused -> {
+                playInternal()
+                updatePlayerPhase(AtomPlayerPhase.Playing)
+            }
+            AtomPlayerPhase.Playing -> {
+                playInternal()
+            }
+            AtomPlayerPhase.End -> {
+                /**
+                 * 依据外部播放器 seek 变更
+                 * 具体由协作播放器处理，协作播放器需要判断当前End状态，[seekTo] 至指定位置，后调用 player 方法
+                 * [seekTo] 方法传入的参数为 position 需要被记录
+                 */
+                if (currentPosition() < duration()) {
+                    playInternal()
+                    updatePlayerPhase(AtomPlayerPhase.Playing)
+                }
+            }
         }
         targetPhase = AtomPlayerPhase.Playing
     }
@@ -55,6 +76,9 @@ abstract class AbstractAtomPlayer : AtomPlayer {
     override fun pause() {
         if (isInPlaybackState()) {
             pauseInternal()
+            updatePlayerPhase(AtomPlayerPhase.Paused)
+        } else {
+            Log.w("$name pause when $currentPhase")
         }
         targetPhase = AtomPlayerPhase.Paused
     }
@@ -66,13 +90,28 @@ abstract class AbstractAtomPlayer : AtomPlayer {
     open fun pauseInternal() {}
 
     override fun stop() {
-        seekTo(0)
+        seekTo(duration())
         pause()
     }
 
     abstract override fun release()
 
-    abstract override fun seekTo(timeMs: Long)
+    override fun seekTo(timeMs: Long) {
+        if (isInPlaybackState() && timeMs <= duration()) {
+            seekToInternal(timeMs)
+        } else {
+            if (currentPhase != AtomPlayerPhase.End) {
+                seekToInternal(duration())
+                pauseInternal()
+                updatePlayerPhase(AtomPlayerPhase.End)
+            }
+            notifyChanged {
+                it.onSeekTo(this, timeMs)
+            }
+        }
+    }
+
+    open fun seekToInternal(timeMs: Long) {}
 
     abstract override fun currentPosition(): Long
 
@@ -96,6 +135,9 @@ abstract class AbstractAtomPlayer : AtomPlayer {
         }
     }
 
+    /**
+     * 更新并发送异步通知
+     */
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
         Log.d("[$name] updatePlayerPhase to $newPhase, from $currentPhase")
         if (currentPhase != newPhase) {

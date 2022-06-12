@@ -72,7 +72,7 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
         positionNotifier.stop()
     }
 
-    override fun seekTo(timeMs: Long) {
+    override fun seekToInternal(timeMs: Long) {
         startPosition = timeMs
         lastPlay = System.currentTimeMillis()
         notifyChanged {

@@ -54,7 +54,11 @@ class ClusterPlayer constructor(
         }
     }
 
-    override fun seekTo(timeMs: Long) {
+    /**
+     * 协同播放器需要将 seek 信息传递给内部播放器
+     * 内部播放器 seekTo 需要保证回调 onSeekTo，如果到达尾部，变更为End
+     */
+    override fun seekToInternal(timeMs: Long) {
         seeking = 2
         players.forEach {
             it.seekTo(timeMs)
@@ -111,9 +115,10 @@ class ClusterPlayer constructor(
                         updatePlayerPhase(AtomPlayerPhase.Ready)
                         if (targetPhase == AtomPlayerPhase.Playing) {
                             playInternal()
-                        }
-                        if (targetPhase == AtomPlayerPhase.Paused) {
+                            updatePlayerPhase(AtomPlayerPhase.Playing)
+                        } else if (targetPhase == AtomPlayerPhase.Paused) {
                             pauseInternal()
+                            updatePlayerPhase(AtomPlayerPhase.Paused)
                         }
                     }
                 }
@@ -152,10 +157,10 @@ class ClusterPlayer constructor(
             if (seeking > 0) seeking--
             if (seeking == 0) {
                 Log.d("[$name] onSeekTo ${atomPlayer.name} $timeMs")
-
                 position = targetPosition
                 notifyChanged {
-                    it.onSeekTo(this@ClusterPlayer, timeMs = timeMs)
+                    it.onSeekTo(this@ClusterPlayer, timeMs = position)
+                    it.onPositionChanged(this@ClusterPlayer, position = position)
                 }
             }
         }

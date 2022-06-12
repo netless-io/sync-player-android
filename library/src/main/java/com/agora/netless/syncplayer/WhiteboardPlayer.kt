@@ -23,35 +23,61 @@ class WhiteboardPlayer(
         private fun handleInterPlayerPhase(interPhase: PlayerPhase) {
             when (interPhase) {
                 PlayerPhase.buffering -> {
-                    if (currentPhase != AtomPlayerPhase.Idle) {
+                    if (currentPhase == AtomPlayerPhase.Playing) {
                         updatePlayerPhase(AtomPlayerPhase.Buffering)
+                    } else if (currentPhase == AtomPlayerPhase.Paused) {
+                        pauseInternal()
                     }
                 }
                 PlayerPhase.pause -> {
-                    if (targetPhase == AtomPlayerPhase.Paused) {
-                        updatePlayerPhase(AtomPlayerPhase.Paused)
+                    when (currentPhase) {
+                        AtomPlayerPhase.Buffering -> {
+                            updatePlayerPhase(AtomPlayerPhase.Paused)
+                        }
+                        AtomPlayerPhase.Paused -> {
+                            // nothing
+                        }
+                        else -> {
+                            Log.w("[$name] onPaused when $currentPhase")
+                        }
                     }
                 }
                 PlayerPhase.playing -> {
-                    if (targetPhase == AtomPlayerPhase.Playing) {
+                    if (currentPhase == AtomPlayerPhase.Buffering) {
                         updatePlayerPhase(AtomPlayerPhase.Playing)
+                    } else {
+                        Log.w("[$name] onPlaying when $currentPhase")
+                        if (targetPhase == AtomPlayerPhase.Paused) {
+                            pauseInternal()
+                        }
                     }
                 }
                 PlayerPhase.stopped, PlayerPhase.ended -> {
                     updatePlayerPhase(AtomPlayerPhase.End)
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
 
         override fun onLoadFirstFrame() {
             Log.d("[$name] interPlayer onLoadFirstFrame")
-
             handler.post {
+                Log.d("[$name] onReady when $currentPhase")
                 player.playbackSpeed = playbackSpeed.toDouble()
                 updatePlayerPhase(AtomPlayerPhase.Ready)
-                if (targetPhase == AtomPlayerPhase.Ready || targetPhase == AtomPlayerPhase.Paused) {
-                    player.pause()
+                when (targetPhase) {
+                    AtomPlayerPhase.Playing -> {
+                        playInternal()
+                        updatePlayerPhase(AtomPlayerPhase.Playing)
+                    }
+                    AtomPlayerPhase.Paused -> {
+                        pauseInternal()
+                        updatePlayerPhase(AtomPlayerPhase.Paused)
+                    }
+                    AtomPlayerPhase.Ready -> {
+                        pauseInternal()
+                    }
                 }
             }
         }
@@ -60,7 +86,9 @@ class WhiteboardPlayer(
             // Log.d("[$name] interPlayer onScheduleTimeChanged $time")
 
             notifyChanged {
-                it.onPositionChanged(this@WhiteboardPlayer, time)
+                if (isPlaying) {
+                    it.onPositionChanged(this@WhiteboardPlayer, time)
+                }
             }
         }
     }
@@ -78,14 +106,16 @@ class WhiteboardPlayer(
     }
 
     override fun pauseInternal() {
-        player.pause()
+        if (player.playerPhase != PlayerPhase.pause) {
+            player.pause()
+        }
     }
 
     override fun release() {
         player.stop()
     }
 
-    override fun seekTo(timeMs: Long) {
+    override fun seekToInternal(timeMs: Long) {
         player.seekToScheduleTime(timeMs)
         notifyChanged {
             it.onSeekTo(this, timeMs = timeMs)
@@ -93,10 +123,16 @@ class WhiteboardPlayer(
     }
 
     override fun currentPosition(): Long {
-        return player.playerTimeInfo.scheduleTime
+        if (isInPlaybackState()) {
+            return player.playerTimeInfo.scheduleTime
+        }
+        return 0
     }
 
     override fun duration(): Long {
-        return player.playerTimeInfo.timeDuration
+        if (isInPlaybackState()) {
+            return player.playerTimeInfo.timeDuration
+        }
+        return -1
     }
 }

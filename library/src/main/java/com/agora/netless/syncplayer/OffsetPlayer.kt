@@ -7,7 +7,7 @@ class OffsetPlayer constructor(
     private val offset: Long,
 ) : AbstractAtomPlayer() {
     private val fakePlayer = FakePlayer(offset)
-    private var nextPlaying = false;
+    private var nextPlaying = false
 
     init {
         fakePlayer.ignorePlayWhenEnd = false
@@ -101,9 +101,11 @@ class OffsetPlayer constructor(
             updatePlayerPhase(AtomPlayerPhase.Ready)
             if (targetPhase == AtomPlayerPhase.Playing) {
                 playInternal()
+                updatePlayerPhase(AtomPlayerPhase.Playing)
             }
             if (targetPhase == AtomPlayerPhase.Paused) {
                 pauseInternal()
+                updatePlayerPhase(AtomPlayerPhase.Paused)
             }
         }
     }
@@ -132,7 +134,7 @@ class OffsetPlayer constructor(
         targetPhase = AtomPlayerPhase.End
     }
 
-    override fun seekTo(timeMs: Long) {
+    override fun seekToInternal(timeMs: Long) {
         if (timeMs < offset) {
             fakePlayer.seekTo(timeMs)
         } else {

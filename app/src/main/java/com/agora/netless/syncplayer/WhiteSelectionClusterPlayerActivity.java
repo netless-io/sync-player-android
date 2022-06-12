@@ -69,16 +69,15 @@ public class WhiteSelectionClusterPlayerActivity extends BaseActivity implements
         playerStateLayout1.attachPlayer(videoPlayer);
 
         WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
-        playerStateLayout2.attachPlayer(whiteboardPlayer);
-
         AtomPlayer selectionPlayer = new SelectionPlayer(whiteboardPlayer, new SelectionOptions(
                 Arrays.asList(
                         new Selection(5_000, 10_000),
                         new Selection(15_000, 20_000),
                         new Selection(30_000, 40_000),
-                        new Selection(60_000, 100_000)
+                        new Selection(60_000, 120_000)
                 )
         ));
+        playerStateLayout2.attachPlayer(selectionPlayer);
 
         finalPlayer = SyncPlayer.combine(selectionPlayer, videoPlayer);
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
