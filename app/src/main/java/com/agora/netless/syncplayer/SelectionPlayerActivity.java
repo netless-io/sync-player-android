@@ -20,7 +20,7 @@ public class SelectionPlayerActivity extends BaseActivity implements View.OnClic
     private PlayerStateLayout playerStateLayout;
     private SeekBar seekBar;
 
-    private SelectionPlayer selectionPlayer;
+    private SelectionPlayer finalPlayer;
     private boolean isSeeking;
 
     @Override
@@ -38,7 +38,7 @@ public class SelectionPlayerActivity extends BaseActivity implements View.OnClic
         // PlayerStateLayout attach internal player to display Selections IN.
         playerStateLayout.attachPlayer(videoPlayer);
 
-        selectionPlayer = new SelectionPlayer(videoPlayer, new SelectionOptions(
+        finalPlayer = new SelectionPlayer(videoPlayer, new SelectionOptions(
                 Arrays.asList(
                         new Selection(5_000, 10_000),
                         new Selection(15_000, 20_000),
@@ -46,7 +46,7 @@ public class SelectionPlayerActivity extends BaseActivity implements View.OnClic
                         new Selection(60_000, 100_000)
                 )
         ));
-        selectionPlayer.addPlayerListener(new AtomPlayerListener() {
+        finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -97,7 +97,7 @@ public class SelectionPlayerActivity extends BaseActivity implements View.OnClic
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    selectionPlayer.seekTo(targetProgress);
+                    finalPlayer.seekTo(targetProgress);
                 }
             }
         });
@@ -107,14 +107,20 @@ public class SelectionPlayerActivity extends BaseActivity implements View.OnClic
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                selectionPlayer.play();
+                finalPlayer.play();
                 break;
             case R.id.button_pause:
-                selectionPlayer.pause();
+                finalPlayer.pause();
                 break;
             case R.id.button_reset:
-                selectionPlayer.stop();
+                finalPlayer.stop();
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finalPlayer.release();
     }
 }

@@ -33,7 +33,7 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
     private PlayerStateLayout playerStateLayout2;
     private PlayerStateLayout playerStateLayout3;
 
-    private ClusterPlayer clusterPlayer;
+    private ClusterPlayer finalPlayer;
 
     private SeekBar seekBar;
     private boolean isSeeking;
@@ -89,10 +89,10 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
 
         WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
         whiteboardPlayer.setName("whiteboardPlayer");
-        playerStateLayout2.attachPlayer(whiteboardPlayer);
+        playerStateLayout3.attachPlayer(whiteboardPlayer);
 
-        clusterPlayer = new ClusterPlayer(whiteboardPlayer, combinePlayer);
-        clusterPlayer.addPlayerListener(new AtomPlayerListener() {
+        finalPlayer = new ClusterPlayer(whiteboardPlayer, combinePlayer);
+        finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -150,7 +150,7 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    clusterPlayer.seekTo(targetProgress);
+                    finalPlayer.seekTo(targetProgress);
                 }
             }
         });
@@ -173,13 +173,13 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                clusterPlayer.play();
+                finalPlayer.play();
                 break;
             case R.id.button_pause:
-                clusterPlayer.pause();
+                finalPlayer.pause();
                 break;
             case R.id.button_reset:
-                clusterPlayer.stop();
+                finalPlayer.stop();
                 break;
         }
     }
@@ -187,6 +187,6 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        clusterPlayer.release();
+        finalPlayer.release();
     }
 }

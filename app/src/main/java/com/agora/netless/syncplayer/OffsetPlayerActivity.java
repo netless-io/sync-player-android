@@ -16,7 +16,7 @@ public class OffsetPlayerActivity extends BaseActivity implements View.OnClickLi
     private FrameLayout playerContainer;
     private SeekBar seekBar;
 
-    private OffsetPlayer offsetPlayer;
+    private OffsetPlayer finalPlayer;
     private boolean isSeeking;
 
     @Override
@@ -32,8 +32,8 @@ public class OffsetPlayerActivity extends BaseActivity implements View.OnClickLi
         videoPlayer.setName("videoPlayer");
         videoPlayer.setPlayerContainer(playerContainer);
 
-        offsetPlayer = new OffsetPlayer(videoPlayer, 5000L);
-        offsetPlayer.addPlayerListener(new AtomPlayerListener() {
+        finalPlayer = new OffsetPlayer(videoPlayer, 5000L);
+        finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -83,7 +83,7 @@ public class OffsetPlayerActivity extends BaseActivity implements View.OnClickLi
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    offsetPlayer.seekTo(targetProgress);
+                    finalPlayer.seekTo(targetProgress);
                 }
             }
         });
@@ -93,14 +93,20 @@ public class OffsetPlayerActivity extends BaseActivity implements View.OnClickLi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                offsetPlayer.play();
+                finalPlayer.play();
                 break;
             case R.id.button_pause:
-                offsetPlayer.pause();
+                finalPlayer.pause();
                 break;
             case R.id.button_reset:
-                offsetPlayer.stop();
+                finalPlayer.stop();
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finalPlayer.release();
     }
 }

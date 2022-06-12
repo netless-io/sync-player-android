@@ -18,7 +18,7 @@ public class ClusterPlayerActivity extends BaseActivity implements View.OnClickL
     private FrameLayout playerContainer2;
     private PlayerStateLayout playerStateLayout1;
     private PlayerStateLayout playerStateLayout2;
-    private ClusterPlayer clusterPlayer;
+    private ClusterPlayer finalPlayer;
 
     private SeekBar seekBar;
     private boolean isSeeking;
@@ -42,8 +42,8 @@ public class ClusterPlayerActivity extends BaseActivity implements View.OnClickL
         videoPlayer2.setPlayerContainer(playerContainer2);
         playerStateLayout2.attachPlayer(videoPlayer2);
 
-        clusterPlayer = new ClusterPlayer(videoPlayer1, videoPlayer2);
-        clusterPlayer.addPlayerListener(new AtomPlayerListener() {
+        finalPlayer = new ClusterPlayer(videoPlayer1, videoPlayer2);
+        finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -97,7 +97,7 @@ public class ClusterPlayerActivity extends BaseActivity implements View.OnClickL
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    clusterPlayer.seekTo(targetProgress);
+                    finalPlayer.seekTo(targetProgress);
                 }
             }
         });
@@ -107,13 +107,13 @@ public class ClusterPlayerActivity extends BaseActivity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                clusterPlayer.play();
+                finalPlayer.play();
                 break;
             case R.id.button_pause:
-                clusterPlayer.pause();
+                finalPlayer.pause();
                 break;
             case R.id.button_reset:
-                clusterPlayer.stop();
+                finalPlayer.stop();
                 break;
         }
     }
@@ -121,6 +121,6 @@ public class ClusterPlayerActivity extends BaseActivity implements View.OnClickL
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        clusterPlayer.release();
+        finalPlayer.release();
     }
 }

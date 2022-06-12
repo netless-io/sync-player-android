@@ -25,7 +25,7 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
     private PlayerStateLayout playerStateLayout;
     private SeekBar seekBar;
 
-    private WhiteboardPlayer whiteboardPlayer;
+    private WhiteboardPlayer finalPlayer;
     private boolean isSeeking;
 
     @Override
@@ -59,11 +59,11 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
     }
 
     private void initPlayer(Player player) {
-        whiteboardPlayer = new WhiteboardPlayer(player);
-        whiteboardPlayer.setName("whiteboardPlayer");
+        finalPlayer = new WhiteboardPlayer(player);
+        finalPlayer.setName("whiteboardPlayer");
 
-        playerStateLayout.attachPlayer(whiteboardPlayer);
-        whiteboardPlayer.addPlayerListener(new AtomPlayerListener() {
+        playerStateLayout.attachPlayer(finalPlayer);
+        finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -115,7 +115,7 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    whiteboardPlayer.seekTo(targetProgress);
+                    finalPlayer.seekTo(targetProgress);
                 }
             }
         });
@@ -137,14 +137,20 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                whiteboardPlayer.play();
+                finalPlayer.play();
                 break;
             case R.id.button_pause:
-                whiteboardPlayer.pause();
+                finalPlayer.pause();
                 break;
             case R.id.button_reset:
-                whiteboardPlayer.stop();
+                finalPlayer.stop();
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finalPlayer.release();
     }
 }

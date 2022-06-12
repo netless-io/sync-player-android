@@ -16,7 +16,7 @@ public class VideoPlayerActivity extends BaseActivity implements View.OnClickLis
     private FrameLayout playerContainer;
     private SeekBar seekBar;
 
-    private VideoPlayer videoPlayer;
+    private VideoPlayer finalPlayer;
     private boolean isSeeking;
 
     @Override
@@ -28,11 +28,11 @@ public class VideoPlayerActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void initData() {
-        videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
-        videoPlayer.setName("videoPlayer");
-        videoPlayer.setPlayerContainer(playerContainer);
+        finalPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
+        finalPlayer.setName("videoPlayer");
+        finalPlayer.setPlayerContainer(playerContainer);
 
-        videoPlayer.addPlayerListener(new AtomPlayerListener() {
+        finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -82,7 +82,7 @@ public class VideoPlayerActivity extends BaseActivity implements View.OnClickLis
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    videoPlayer.seekTo(targetProgress);
+                    finalPlayer.seekTo(targetProgress);
                 }
             }
         });
@@ -92,14 +92,20 @@ public class VideoPlayerActivity extends BaseActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                videoPlayer.play();
+                finalPlayer.play();
                 break;
             case R.id.button_pause:
-                videoPlayer.pause();
+                finalPlayer.pause();
                 break;
             case R.id.button_reset:
-                videoPlayer.stop();
+                finalPlayer.stop();
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finalPlayer.release();
     }
 }

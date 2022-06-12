@@ -166,4 +166,10 @@ public class WhiteSelectionClusterPlayerActivity extends BaseActivity implements
                 break;
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finalPlayer.release();
+    }
 }

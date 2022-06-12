@@ -11,7 +11,6 @@ import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
 import com.agora.netless.syncplayer.misc.PlayerStateLayout;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
-import com.herewhite.sdk.AbstractPlayerEventListener;
 import com.herewhite.sdk.Player;
 import com.herewhite.sdk.WhiteSdk;
 import com.herewhite.sdk.WhiteSdkConfiguration;
@@ -26,9 +25,9 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
     private WhiteboardView whiteboardView;
     private PlayerStateLayout playerStateLayout;
     private SeekBar seekBar;
-    private boolean isSeeking;
 
-    private SelectionPlayer selectionPlayer;
+    private SelectionPlayer finalPlayer;
+    private boolean isSeeking;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,27 +43,25 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
         PlayerConfiguration playerConfiguration = new PlayerConfiguration(Constant.ROOM_UUID, Constant.ROOM_TOKEN);
         playerConfiguration.setDuration(120000L);
 
-        whiteSdk.createPlayer(playerConfiguration, new AbstractPlayerEventListener() {
-                },
-                new Promise<Player>() {
-                    @Override
-                    public void then(Player player) {
-                        enableBtn();
-                        initPlayer(player);
-                    }
+        whiteSdk.createPlayer(playerConfiguration, new Promise<Player>() {
+            @Override
+            public void then(Player player) {
+                enableBtn();
+                initPlayer(player);
+            }
 
-                    @Override
-                    public void catchEx(SDKError t) {
+            @Override
+            public void catchEx(SDKError t) {
 
-                    }
-                });
+            }
+        });
     }
 
     private void initPlayer(Player player) {
         WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
         whiteboardPlayer.setName("whiteboardPlayer");
 
-        selectionPlayer = new SelectionPlayer(whiteboardPlayer, new SelectionOptions(
+        finalPlayer = new SelectionPlayer(whiteboardPlayer, new SelectionOptions(
                 Arrays.asList(
                         new Selection(5_000, 10_000),
                         new Selection(15_000, 20_000),
@@ -72,9 +69,9 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
                         new Selection(60_000, 100_000)
                 )
         ));
-        playerStateLayout.attachPlayer(selectionPlayer);
+        playerStateLayout.attachPlayer(finalPlayer);
 
-        selectionPlayer.addPlayerListener(new AtomPlayerListener() {
+        finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
@@ -126,7 +123,7 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isSeeking = false;
                 if (targetProgress != -1) {
-                    selectionPlayer.seekTo(targetProgress);
+                    finalPlayer.seekTo(targetProgress);
                 }
             }
         });
@@ -148,14 +145,20 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_play:
-                selectionPlayer.play();
+                finalPlayer.play();
                 break;
             case R.id.button_pause:
-                selectionPlayer.pause();
+                finalPlayer.pause();
                 break;
             case R.id.button_reset:
-                selectionPlayer.stop();
+                finalPlayer.stop();
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finalPlayer.release();
     }
 }
