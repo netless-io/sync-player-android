@@ -14,86 +14,46 @@ class WhiteboardPlayer(
             player.playbackSpeed = value.toDouble()
         }
 
-    private val interPlayerListener = object : AbstractPlayerEventListener() {
-        override fun onPhaseChanged(phase: PlayerPhase) {
-            Log.d("[$name] interPlayer onPhaseChanged $phase")
-            handler.post { handleInterPlayerPhase(phase) }
-        }
-
-        private fun handleInterPlayerPhase(interPhase: PlayerPhase) {
-            when (interPhase) {
-                PlayerPhase.buffering -> {
-                    if (currentPhase == AtomPlayerPhase.Playing) {
-                        updatePlayerPhase(AtomPlayerPhase.Buffering)
-                    } else if (currentPhase == AtomPlayerPhase.Paused) {
-                        pauseInternal()
+    init {
+        val interPlayerListener = object : AbstractPlayerEventListener() {
+            override fun onPhaseChanged(phase: PlayerPhase) {
+                Log.d("[$name] interPlayer onPhaseChanged $phase")
+                when (phase) {
+                    PlayerPhase.buffering -> {
+                        val msg = eventHandler.obtainMessage(INTERNAL_BUFFERING)
+                        msg.sendToTarget()
                     }
-                }
-                PlayerPhase.pause -> {
-                    when (currentPhase) {
-                        AtomPlayerPhase.Buffering -> {
-                            updatePlayerPhase(AtomPlayerPhase.Paused)
-                        }
-                        AtomPlayerPhase.Paused -> {
-                            // nothing
-                        }
-                        else -> {
-                            Log.w("[$name] onPaused when $currentPhase")
-                        }
+                    PlayerPhase.pause -> {
+                        val msg = eventHandler.obtainMessage(INTERNAL_PAUSED)
+                        msg.sendToTarget()
                     }
-                }
-                PlayerPhase.playing -> {
-                    if (currentPhase == AtomPlayerPhase.Buffering) {
-                        updatePlayerPhase(AtomPlayerPhase.Playing)
-                    } else {
-                        Log.w("[$name] onPlaying when $currentPhase")
-                        if (targetPhase == AtomPlayerPhase.Paused) {
-                            pauseInternal()
-                        }
+                    PlayerPhase.playing -> {
+                        val msg = eventHandler.obtainMessage(INTERNAL_PLAYING)
+                        msg.sendToTarget()
                     }
-                }
-                PlayerPhase.stopped, PlayerPhase.ended -> {
-                    updatePlayerPhase(AtomPlayerPhase.End)
-                }
-                else -> {
-                }
-            }
-        }
-
-        override fun onLoadFirstFrame() {
-            Log.d("[$name] interPlayer onLoadFirstFrame")
-            handler.post {
-                Log.d("[$name] onReady when $currentPhase")
-                player.playbackSpeed = playbackSpeed.toDouble()
-                updatePlayerPhase(AtomPlayerPhase.Ready)
-                when (targetPhase) {
-                    AtomPlayerPhase.Playing -> {
-                        playInternal()
-                        updatePlayerPhase(AtomPlayerPhase.Playing)
+                    PlayerPhase.stopped, PlayerPhase.ended -> {
+                        val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_END)
+                        msg.sendToTarget()
                     }
-                    AtomPlayerPhase.Paused -> {
-                        pauseInternal()
-                        updatePlayerPhase(AtomPlayerPhase.Paused)
-                    }
-                    AtomPlayerPhase.Ready -> {
-                        pauseInternal()
+                    else -> {
                     }
                 }
             }
-        }
 
-        override fun onScheduleTimeChanged(time: Long) {
-            // Log.d("[$name] interPlayer onScheduleTimeChanged $time")
+            override fun onLoadFirstFrame() {
+                Log.d("[$name] interPlayer onLoadFirstFrame")
+                // player.playbackSpeed = playbackSpeed.toDouble()
+                val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_READY)
+                msg.sendToTarget()
+            }
 
-            notifyChanged {
-                if (isPlaying) {
+            override fun onScheduleTimeChanged(time: Long) {
+                // Log.d("[$name] interPlayer onScheduleTimeChanged $time")
+                notifyChanged {
                     it.onPositionChanged(this@WhiteboardPlayer, time)
                 }
             }
         }
-    }
-
-    init {
         player.addPlayerListener(interPlayerListener)
     }
 
@@ -111,15 +71,15 @@ class WhiteboardPlayer(
         }
     }
 
-    override fun release() {
-        player.stop()
-    }
-
     override fun seekToInternal(timeMs: Long) {
         player.seekToScheduleTime(timeMs)
         notifyChanged {
             it.onSeekTo(this, timeMs = timeMs)
         }
+    }
+
+    override fun release() {
+        player.stop()
     }
 
     override fun currentPosition(): Long {

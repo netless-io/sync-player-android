@@ -10,7 +10,6 @@ class OffsetPlayer constructor(
     private var nextPlaying = false
 
     init {
-        fakePlayer.ignorePlayWhenEnd = false
         fakePlayer.addPlayerListener(object : AtomPlayerListener {
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
                 if (position < offset) {

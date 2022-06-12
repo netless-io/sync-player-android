@@ -39,45 +39,38 @@ class VideoPlayer constructor(
                     updatePlayerPhase(AtomPlayerPhase.Idle)
                 }
                 Player.STATE_BUFFERING -> {
-                    Log.d("[$name] onBuffering when $currentPhase")
-                    if (currentPhase == AtomPlayerPhase.Playing) {
-                        updatePlayerPhase(AtomPlayerPhase.Buffering)
-                    } else if (currentPhase == AtomPlayerPhase.Paused) {
-                        pauseInternal()
-                    }
+                    val msg = eventHandler.obtainMessage(INTERNAL_BUFFERING)
+                    msg.sendToTarget()
                 }
                 Player.STATE_READY -> {
                     if (currentPhase == AtomPlayerPhase.Idle) {
-                        Log.d("[$name] onReady when $currentPhase")
-                        updatePlayerPhase(AtomPlayerPhase.Ready)
-                        if (targetPhase == AtomPlayerPhase.Playing) {
-                            playInternal()
-                            updatePlayerPhase(AtomPlayerPhase.Playing)
-                        } else if (targetPhase == AtomPlayerPhase.Paused) {
-                            pauseInternal()
-                            updatePlayerPhase(AtomPlayerPhase.Paused)
-                        }
+                        val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_READY)
+                        msg.sendToTarget()
                     } else {
                         if (exoPlayer.playWhenReady) {
-                            onInternalPlaying()
+                            val msg = eventHandler.obtainMessage(INTERNAL_PLAYING)
+                            msg.sendToTarget()
                         } else {
-                            onInternalPaused()
+                            val msg = eventHandler.obtainMessage(INTERNAL_PAUSED)
+                            msg.sendToTarget()
                         }
                     }
                 }
                 Player.STATE_ENDED -> {
-                    updatePlayerPhase(AtomPlayerPhase.End)
+                    val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_END)
+                    msg.sendToTarget()
                 }
             }
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
-            Log.d("[$name] interPlayer onPlayerError ${error.type} ${error.message}")
-            playerError = error
+            val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_ERROR)
+            msg.obj = error
+            msg.sendToTarget()
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            Log.d("[$name] interPlayer onIsPlayingChanged $isPlaying")
+            Log.d("[$name] exoPlayer onIsPlayingChanged $isPlaying")
             if (isPlaying) {
                 positionNotifier.start()
             } else {
@@ -97,31 +90,6 @@ class VideoPlayer constructor(
                     it.onSeekTo(this@VideoPlayer, pos)
                     it.onPositionChanged(this@VideoPlayer, pos)
                 }
-            }
-        }
-    }
-
-    private fun onInternalPaused() {
-        when (currentPhase) {
-            AtomPlayerPhase.Buffering -> {
-                updatePlayerPhase(AtomPlayerPhase.Paused)
-            }
-            AtomPlayerPhase.Paused -> {
-                // nothing
-            }
-            else -> {
-                Log.w("[$name] onPaused when $currentPhase")
-            }
-        }
-    }
-
-    private fun onInternalPlaying() {
-        if (currentPhase == AtomPlayerPhase.Buffering) {
-            updatePlayerPhase(AtomPlayerPhase.Playing)
-        } else {
-            Log.w("[$name] onPlaying when $currentPhase")
-            if (targetPhase == AtomPlayerPhase.Paused) {
-                pauseInternal()
             }
         }
     }

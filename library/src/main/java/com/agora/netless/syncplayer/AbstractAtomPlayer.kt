@@ -2,6 +2,7 @@ package com.agora.netless.syncplayer
 
 import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.view.ViewGroup
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -11,6 +12,8 @@ abstract class AbstractAtomPlayer : AtomPlayer {
     internal var ignorePlayWhenEnd: Boolean = true
 
     internal val handler = Handler(Looper.getMainLooper())
+
+    internal val eventHandler = EventHandler(Looper.getMainLooper())
 
     override var currentPhase = AtomPlayerPhase.Idle
 
@@ -83,19 +86,6 @@ abstract class AbstractAtomPlayer : AtomPlayer {
         targetPhase = AtomPlayerPhase.Paused
     }
 
-    open fun prepareInternal() {}
-
-    open fun playInternal() {}
-
-    open fun pauseInternal() {}
-
-    override fun stop() {
-        seekTo(duration())
-        pause()
-    }
-
-    abstract override fun release()
-
     override fun seekTo(timeMs: Long) {
         if (isInPlaybackState() && timeMs <= duration()) {
             seekToInternal(timeMs)
@@ -111,7 +101,20 @@ abstract class AbstractAtomPlayer : AtomPlayer {
         }
     }
 
+    override fun stop() {
+        seekTo(duration())
+        pause()
+    }
+
+    open fun prepareInternal() {}
+
+    open fun playInternal() {}
+
+    open fun pauseInternal() {}
+
     open fun seekToInternal(timeMs: Long) {}
+
+    abstract override fun release()
 
     abstract override fun currentPosition(): Long
 
@@ -140,6 +143,7 @@ abstract class AbstractAtomPlayer : AtomPlayer {
      */
     internal fun updatePlayerPhase(newPhase: AtomPlayerPhase) {
         Log.d("[$name] updatePlayerPhase to $newPhase, from $currentPhase")
+
         if (currentPhase != newPhase) {
             currentPhase = newPhase
             notifyChanged {
@@ -147,4 +151,98 @@ abstract class AbstractAtomPlayer : AtomPlayer {
             }
         }
     }
+
+    companion object {
+        internal const val INTERNAL_PLAYER_READY = 1
+        internal const val INTERNAL_PLAYING = 2
+        internal const val INTERNAL_BUFFERING = 3
+        internal const val INTERNAL_PAUSED = 4
+        internal const val INTERNAL_PLAYER_END = 5
+        internal const val INTERNAL_PLAYER_ERROR = 6
+        internal const val INTERNAL_SEEK_COMPLETE = 7
+    }
+
+    inner class EventHandler(looper: Looper) : Handler(looper) {
+        override fun handleMessage(msg: Message) {
+            Log.d("[$name] event ${message(msg)} when $currentPhase")
+
+            when (msg.what) {
+                INTERNAL_PLAYER_READY -> {
+                    updatePlayerPhase(AtomPlayerPhase.Ready)
+                    when (targetPhase) {
+                        AtomPlayerPhase.Playing -> {
+                            playInternal()
+                            updatePlayerPhase(AtomPlayerPhase.Playing)
+                        }
+                        AtomPlayerPhase.Paused -> {
+                            pauseInternal()
+                            updatePlayerPhase(AtomPlayerPhase.Paused)
+                        }
+                        AtomPlayerPhase.Ready -> {
+                            // for some player like whiteboard, auto play when ready
+                            pauseInternal()
+                        }
+                    }
+                }
+                INTERNAL_PLAYING -> {
+                    if (currentPhase == AtomPlayerPhase.Buffering) {
+                        updatePlayerPhase(AtomPlayerPhase.Playing)
+                    } else {
+                        if (targetPhase == AtomPlayerPhase.Paused) {
+                            pauseInternal()
+                        } else {
+                            Log.w("[$name] onPlaying when $currentPhase")
+                        }
+                    }
+                }
+
+                INTERNAL_PAUSED -> {
+                    when (currentPhase) {
+                        AtomPlayerPhase.Buffering -> {
+                            updatePlayerPhase(AtomPlayerPhase.Paused)
+                        }
+                        AtomPlayerPhase.Paused -> {
+                            // nothing
+                        }
+                        else -> {
+                            Log.w("[$name] onPaused when $currentPhase")
+                        }
+                    }
+                }
+
+                INTERNAL_BUFFERING -> {
+                    if (currentPhase == AtomPlayerPhase.Playing) {
+                        updatePlayerPhase(AtomPlayerPhase.Buffering)
+                    } else if (currentPhase == AtomPlayerPhase.Paused) {
+                        pauseInternal()
+                    }
+                }
+
+                INTERNAL_PLAYER_END -> {
+                    updatePlayerPhase(AtomPlayerPhase.End)
+                }
+
+                INTERNAL_PLAYER_ERROR -> {
+                    playerError = msg.obj as Exception
+                    updatePlayerPhase(AtomPlayerPhase.Idle)
+                }
+            }
+            super.handleMessage(msg)
+        }
+
+        private fun message(msg: Message): String {
+            val msgType = when (msg.what) {
+                INTERNAL_PLAYER_READY -> "Inter_Ready"
+                INTERNAL_PLAYING -> "Inter_Playing"
+                INTERNAL_BUFFERING -> "Inter_Buffering"
+                INTERNAL_PAUSED -> "Inter_Paused"
+                INTERNAL_PLAYER_END -> "Inter_End"
+                INTERNAL_PLAYER_ERROR -> "Inter_Error"
+                INTERNAL_SEEK_COMPLETE -> "Inter_Seek_End"
+                else -> msg.what.toString()
+            }
+            return msgType
+        }
+    }
 }
+

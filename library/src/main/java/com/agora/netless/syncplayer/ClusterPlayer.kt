@@ -154,9 +154,10 @@ class ClusterPlayer constructor(
         }
 
         override fun onSeekTo(atomPlayer: AtomPlayer, timeMs: Long) {
+            Log.d("[$name] onSeekTo ${atomPlayer.name} $timeMs")
+
             if (seeking > 0) seeking--
             if (seeking == 0) {
-                Log.d("[$name] onSeekTo ${atomPlayer.name} $timeMs")
                 position = targetPosition
                 notifyChanged {
                     it.onSeekTo(this@ClusterPlayer, timeMs = position)
