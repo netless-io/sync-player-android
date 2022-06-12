@@ -20,31 +20,24 @@ class WhiteboardPlayer(
                 Log.d("[$name] interPlayer onPhaseChanged $phase")
                 when (phase) {
                     PlayerPhase.buffering -> {
-                        val msg = eventHandler.obtainMessage(INTERNAL_BUFFERING)
-                        msg.sendToTarget()
+                        eventHandler.obtainMessage(INTERNAL_BUFFERING).sendToTarget()
                     }
                     PlayerPhase.pause -> {
-                        val msg = eventHandler.obtainMessage(INTERNAL_PAUSED)
-                        msg.sendToTarget()
+                        eventHandler.obtainMessage(INTERNAL_PAUSED).sendToTarget()
                     }
                     PlayerPhase.playing -> {
-                        val msg = eventHandler.obtainMessage(INTERNAL_PLAYING)
-                        msg.sendToTarget()
+                        eventHandler.obtainMessage(INTERNAL_PLAYING).sendToTarget()
                     }
                     PlayerPhase.stopped, PlayerPhase.ended -> {
-                        val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_END)
-                        msg.sendToTarget()
+                        eventHandler.obtainMessage(INTERNAL_END).sendToTarget()
                     }
-                    else -> {
-                    }
+                    else -> {; }
                 }
             }
 
             override fun onLoadFirstFrame() {
-                Log.d("[$name] interPlayer onLoadFirstFrame")
-                // player.playbackSpeed = playbackSpeed.toDouble()
-                val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_READY)
-                msg.sendToTarget()
+                Log.d("[$name] whitePlayer onLoadFirstFrame")
+                eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
             }
 
             override fun onScheduleTimeChanged(time: Long) {

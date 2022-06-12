@@ -112,14 +112,7 @@ class ClusterPlayer constructor(
                 AtomPlayerPhase.Idle -> {; }
                 AtomPlayerPhase.Ready -> {
                     if (other(atomPlayer).currentPhase == AtomPlayerPhase.Ready) {
-                        updatePlayerPhase(AtomPlayerPhase.Ready)
-                        if (targetPhase == AtomPlayerPhase.Playing) {
-                            playInternal()
-                            updatePlayerPhase(AtomPlayerPhase.Playing)
-                        } else if (targetPhase == AtomPlayerPhase.Paused) {
-                            pauseInternal()
-                            updatePlayerPhase(AtomPlayerPhase.Paused)
-                        }
+                        eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
                     }
                 }
                 AtomPlayerPhase.Paused -> {
@@ -147,7 +140,7 @@ class ClusterPlayer constructor(
                 }
                 AtomPlayerPhase.End -> {
                     if (other(atomPlayer).currentPhase == AtomPlayerPhase.End) {
-                        updatePlayerPhase(AtomPlayerPhase.End)
+                        eventHandler.obtainMessage(INTERNAL_END).sendToTarget()
                     }
                 }
             }

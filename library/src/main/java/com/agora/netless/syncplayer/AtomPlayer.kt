@@ -54,7 +54,7 @@ interface AtomPlayerListener {
 
 enum class AtomPlayerPhase {
     /**
-     * 视频播放尚未开始或已经结束。
+     * 视频播放尚未开始或播放过程中出现错误。
      */
     Idle,
 
@@ -80,6 +80,7 @@ enum class AtomPlayerPhase {
 
     /**
      * 播放结束。
+     *
      */
     End,
 }

@@ -39,34 +39,27 @@ class VideoPlayer constructor(
                     updatePlayerPhase(AtomPlayerPhase.Idle)
                 }
                 Player.STATE_BUFFERING -> {
-                    val msg = eventHandler.obtainMessage(INTERNAL_BUFFERING)
-                    msg.sendToTarget()
+                    eventHandler.obtainMessage(INTERNAL_BUFFERING).sendToTarget()
                 }
                 Player.STATE_READY -> {
                     if (currentPhase == AtomPlayerPhase.Idle) {
-                        val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_READY)
-                        msg.sendToTarget()
+                        eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
                     } else {
                         if (exoPlayer.playWhenReady) {
-                            val msg = eventHandler.obtainMessage(INTERNAL_PLAYING)
-                            msg.sendToTarget()
+                            eventHandler.obtainMessage(INTERNAL_PLAYING).sendToTarget()
                         } else {
-                            val msg = eventHandler.obtainMessage(INTERNAL_PAUSED)
-                            msg.sendToTarget()
+                            eventHandler.obtainMessage(INTERNAL_PAUSED).sendToTarget()
                         }
                     }
                 }
                 Player.STATE_ENDED -> {
-                    val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_END)
-                    msg.sendToTarget()
+                    eventHandler.obtainMessage(INTERNAL_END).sendToTarget()
                 }
             }
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
-            val msg = eventHandler.obtainMessage(INTERNAL_PLAYER_ERROR)
-            msg.obj = error
-            msg.sendToTarget()
+            eventHandler.obtainMessage(INTERNAL_ERROR, error).sendToTarget()
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {

@@ -97,15 +97,7 @@ class OffsetPlayer constructor(
         if (player.currentPhase == AtomPlayerPhase.Ready
             && fakePlayer.currentPhase == AtomPlayerPhase.Ready
         ) {
-            updatePlayerPhase(AtomPlayerPhase.Ready)
-            if (targetPhase == AtomPlayerPhase.Playing) {
-                playInternal()
-                updatePlayerPhase(AtomPlayerPhase.Playing)
-            }
-            if (targetPhase == AtomPlayerPhase.Paused) {
-                pauseInternal()
-                updatePlayerPhase(AtomPlayerPhase.Paused)
-            }
+            eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
         }
     }
 

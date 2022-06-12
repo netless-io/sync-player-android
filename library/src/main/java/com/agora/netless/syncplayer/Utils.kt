@@ -35,6 +35,9 @@ internal class PositionNotifier constructor(
     }
 }
 
+/**
+ * 模拟空白播放，实现AtomPlayer
+ */
 internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
     private var startPosition = 0L
     private var lastPlay = 0L
@@ -59,13 +62,11 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
     override fun playInternal() {
         lastPlay = System.currentTimeMillis()
         positionNotifier.start()
-        updatePlayerPhase(AtomPlayerPhase.Playing)
     }
 
     override fun pauseInternal() {
         startPosition += System.currentTimeMillis() - lastPlay
         positionNotifier.stop()
-        updatePlayerPhase(AtomPlayerPhase.Paused)
     }
 
     override fun release() {

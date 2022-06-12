@@ -9,8 +9,6 @@ import java.util.concurrent.CopyOnWriteArraySet
 abstract class AbstractAtomPlayer : AtomPlayer {
     override var name: String = this.javaClass.simpleName
 
-    internal var ignorePlayWhenEnd: Boolean = true
-
     internal val handler = Handler(Looper.getMainLooper())
 
     internal val eventHandler = EventHandler(Looper.getMainLooper())
@@ -153,12 +151,12 @@ abstract class AbstractAtomPlayer : AtomPlayer {
     }
 
     companion object {
-        internal const val INTERNAL_PLAYER_READY = 1
+        internal const val INTERNAL_READY = 1
         internal const val INTERNAL_PLAYING = 2
         internal const val INTERNAL_BUFFERING = 3
         internal const val INTERNAL_PAUSED = 4
-        internal const val INTERNAL_PLAYER_END = 5
-        internal const val INTERNAL_PLAYER_ERROR = 6
+        internal const val INTERNAL_END = 5
+        internal const val INTERNAL_ERROR = 6
         internal const val INTERNAL_SEEK_COMPLETE = 7
     }
 
@@ -167,7 +165,7 @@ abstract class AbstractAtomPlayer : AtomPlayer {
             Log.d("[$name] event ${message(msg)} when $currentPhase")
 
             when (msg.what) {
-                INTERNAL_PLAYER_READY -> {
+                INTERNAL_READY -> {
                     updatePlayerPhase(AtomPlayerPhase.Ready)
                     when (targetPhase) {
                         AtomPlayerPhase.Playing -> {
@@ -195,7 +193,6 @@ abstract class AbstractAtomPlayer : AtomPlayer {
                         }
                     }
                 }
-
                 INTERNAL_PAUSED -> {
                     when (currentPhase) {
                         AtomPlayerPhase.Buffering -> {
@@ -209,7 +206,6 @@ abstract class AbstractAtomPlayer : AtomPlayer {
                         }
                     }
                 }
-
                 INTERNAL_BUFFERING -> {
                     if (currentPhase == AtomPlayerPhase.Playing) {
                         updatePlayerPhase(AtomPlayerPhase.Buffering)
@@ -218,11 +214,11 @@ abstract class AbstractAtomPlayer : AtomPlayer {
                     }
                 }
 
-                INTERNAL_PLAYER_END -> {
+                INTERNAL_END -> {
                     updatePlayerPhase(AtomPlayerPhase.End)
                 }
 
-                INTERNAL_PLAYER_ERROR -> {
+                INTERNAL_ERROR -> {
                     playerError = msg.obj as Exception
                     updatePlayerPhase(AtomPlayerPhase.Idle)
                 }
@@ -232,12 +228,12 @@ abstract class AbstractAtomPlayer : AtomPlayer {
 
         private fun message(msg: Message): String {
             val msgType = when (msg.what) {
-                INTERNAL_PLAYER_READY -> "Inter_Ready"
+                INTERNAL_READY -> "Inter_Ready"
                 INTERNAL_PLAYING -> "Inter_Playing"
                 INTERNAL_BUFFERING -> "Inter_Buffering"
                 INTERNAL_PAUSED -> "Inter_Paused"
-                INTERNAL_PLAYER_END -> "Inter_End"
-                INTERNAL_PLAYER_ERROR -> "Inter_Error"
+                INTERNAL_END -> "Inter_End"
+                INTERNAL_ERROR -> "Inter_Error"
                 INTERNAL_SEEK_COMPLETE -> "Inter_Seek_End"
                 else -> msg.what.toString()
             }

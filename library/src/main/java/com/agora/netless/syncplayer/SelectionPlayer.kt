@@ -43,53 +43,25 @@ class SelectionPlayer(
                     AtomPlayerPhase.Ready -> {
                         currentSelection = 0
                         atomPlayer.seekTo(segInter[0].start)
-                        updatePlayerPhase(AtomPlayerPhase.Ready)
-                        if (targetPhase == AtomPlayerPhase.Playing) {
-                            playInternal()
-                            updatePlayerPhase(AtomPlayerPhase.Playing)
-                        } else if (targetPhase == AtomPlayerPhase.Paused) {
-                            pauseInternal()
-                            updatePlayerPhase(AtomPlayerPhase.Paused)
-                        }
+                        eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
                     }
                     AtomPlayerPhase.Paused -> {
-                        when (currentPhase) {
-                            AtomPlayerPhase.Buffering -> {
-                                updatePlayerPhase(AtomPlayerPhase.Paused)
-                            }
-                            AtomPlayerPhase.Paused -> {
-                                // nothing
-                            }
-                            else -> {
-                                Log.w("[$name] onPaused when $currentPhase")
-                            }
-                        }
+                        eventHandler.obtainMessage(INTERNAL_PAUSED).sendToTarget()
                     }
                     AtomPlayerPhase.Playing -> {
-                        if (currentPhase == AtomPlayerPhase.Buffering) {
-                            updatePlayerPhase(AtomPlayerPhase.Playing)
-                        } else {
-                            Log.w("[$name] onPlaying when $currentPhase")
-                            if (targetPhase == AtomPlayerPhase.Paused) {
-                                pauseInternal()
-                            }
-                        }
+                        eventHandler.obtainMessage(INTERNAL_PLAYING).sendToTarget()
                     }
                     AtomPlayerPhase.Buffering -> {
-                        if (currentPhase == AtomPlayerPhase.Playing) {
-                            updatePlayerPhase(AtomPlayerPhase.Buffering)
-                        } else if (currentPhase == AtomPlayerPhase.Paused) {
-                            pauseInternal()
-                        }
+                        eventHandler.obtainMessage(INTERNAL_BUFFERING).sendToTarget()
                     }
                     AtomPlayerPhase.End -> {
-                        updatePlayerPhase(AtomPlayerPhase.End)
+                        eventHandler.obtainMessage(INTERNAL_END).sendToTarget()
                     }
                 }
             }
 
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
-                if (checkInternalEnd(position)) {
+                if (checkEnd(position)) {
                     pauseInternal()
                     updatePlayerPhase(AtomPlayerPhase.End)
                     return
@@ -144,11 +116,14 @@ class SelectionPlayer(
         return inPosition
     }
 
-    private fun checkInternalEnd(inPosition: Long) = inPosition > segInter.last().end
+    private fun checkEnd(inPosition: Long) = inPosition > segInter.last().end
 
     override fun currentPosition(): Long {
-        val inPosition = atomPlayer.currentPosition()
-        return getOutFromIn(inPosition)
+        if (isInPlaybackState()) {
+            val inPosition = atomPlayer.currentPosition()
+            return getOutFromIn(inPosition)
+        }
+        return 0
     }
 
     override fun duration(): Long {
