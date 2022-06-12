@@ -170,6 +170,8 @@ public class WhiteSelectionClusterPlayerActivity extends BaseActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        finalPlayer.release();
+        if (finalPlayer != null) {
+            finalPlayer.release();
+        }
     }
 }

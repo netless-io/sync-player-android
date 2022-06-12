@@ -159,6 +159,8 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        finalPlayer.release();
+        if (finalPlayer != null) {
+            finalPlayer.release();
+        }
     }
 }

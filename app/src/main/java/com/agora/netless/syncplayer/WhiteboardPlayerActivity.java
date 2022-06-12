@@ -151,6 +151,8 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        finalPlayer.release();
+        if (finalPlayer != null) {
+            finalPlayer.release();
+        }
     }
 }
