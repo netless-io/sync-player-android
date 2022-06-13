@@ -1,6 +1,5 @@
 package com.agora.netless.syncplayer
 
-import com.herewhite.sdk.AbstractPlayerEventListener
 import com.herewhite.sdk.Player
 import com.herewhite.sdk.domain.PlayerPhase
 
@@ -15,7 +14,7 @@ class WhiteboardPlayer(
         }
 
     init {
-        val interPlayerListener = object : AbstractPlayerEventListener() {
+        val interPlayerListener = object : WhitePlayerListenerAdapter() {
             override fun onPhaseChanged(phase: PlayerPhase) {
                 Log.d("[$name] interPlayer onPhaseChanged $phase")
                 when (phase) {

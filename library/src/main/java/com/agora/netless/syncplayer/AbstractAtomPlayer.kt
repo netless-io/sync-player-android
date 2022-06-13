@@ -174,6 +174,7 @@ abstract class AbstractAtomPlayer : AtomPlayer {
                             pauseInternal()
                             updatePlayerPhase(AtomPlayerPhase.Paused)
                         }
+                        else -> {; }
                     }
                 }
                 INTERNAL_PLAYING -> {

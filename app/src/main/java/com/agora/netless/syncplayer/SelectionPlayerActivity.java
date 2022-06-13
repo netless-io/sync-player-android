@@ -105,16 +105,14 @@ public class SelectionPlayerActivity extends BaseActivity implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.button_play:
-                finalPlayer.play();
-                break;
-            case R.id.button_pause:
-                finalPlayer.pause();
-                break;
-            case R.id.button_reset:
-                finalPlayer.stop();
-                break;
+        int id = v.getId();
+        if (id == R.id.button_play) {
+            finalPlayer.play();
+        } else if (id == R.id.button_pause) {
+            finalPlayer.pause();
+        } else if (id == R.id.button_reset) {
+            finalPlayer.stop();
+            finalPlayer.seekTo(0);
         }
     }
 

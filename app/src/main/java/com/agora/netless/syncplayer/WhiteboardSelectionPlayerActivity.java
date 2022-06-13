@@ -41,6 +41,7 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
         WhiteSdk whiteSdk = new WhiteSdk(whiteboardView, this, new WhiteSdkConfiguration(Constant.SDK_APP_ID, true));
 
         PlayerConfiguration playerConfiguration = new PlayerConfiguration(Constant.ROOM_UUID, Constant.ROOM_TOKEN);
+        playerConfiguration.setRegion(Constant.REGION);
         playerConfiguration.setDuration(120000L);
 
         whiteSdk.createPlayer(playerConfiguration, new Promise<Player>() {
@@ -143,16 +144,14 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.button_play:
-                finalPlayer.play();
-                break;
-            case R.id.button_pause:
-                finalPlayer.pause();
-                break;
-            case R.id.button_reset:
-                finalPlayer.stop();
-                break;
+        int id = v.getId();
+        if (id == R.id.button_play) {
+            finalPlayer.play();
+        } else if (id == R.id.button_pause) {
+            finalPlayer.pause();
+        } else if (id == R.id.button_reset) {
+            finalPlayer.stop();
+            finalPlayer.seekTo(0);
         }
     }
 

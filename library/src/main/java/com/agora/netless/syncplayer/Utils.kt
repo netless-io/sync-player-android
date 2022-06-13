@@ -3,6 +3,10 @@ package com.agora.netless.syncplayer
 import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
+import com.herewhite.sdk.PlayerListener
+import com.herewhite.sdk.domain.PlayerPhase
+import com.herewhite.sdk.domain.PlayerState
+import com.herewhite.sdk.domain.SDKError
 
 /**
  * used for notify position.
@@ -91,6 +95,32 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
 
     override fun duration(): Long {
         return duration
+    }
+}
+
+internal open class WhitePlayerListenerAdapter : PlayerListener {
+    override fun onPhaseChanged(phase: PlayerPhase) {
+    }
+
+    override fun onLoadFirstFrame() {
+    }
+
+    override fun onSliceChanged(slice: String) {
+    }
+
+    override fun onPlayerStateChanged(modifyState: PlayerState) {
+    }
+
+    override fun onStoppedWithError(error: SDKError) {
+    }
+
+    override fun onScheduleTimeChanged(time: Long) {
+    }
+
+    override fun onCatchErrorWhenAppendFrame(error: SDKError) {
+    }
+
+    override fun onCatchErrorWhenRender(error: SDKError) {
     }
 }
 

@@ -39,9 +39,9 @@ interface AtomPlayer {
 
     fun setPlayerContainer(container: ViewGroup)
 
-    fun addPlayerListener(listener: AtomPlayerListener);
+    fun addPlayerListener(listener: AtomPlayerListener)
 
-    fun removePlayerListener(listener: AtomPlayerListener);
+    fun removePlayerListener(listener: AtomPlayerListener)
 }
 
 interface AtomPlayerListener {

@@ -9,9 +9,9 @@ import androidx.annotation.Nullable;
 
 import com.agora.netless.syncplayer.misc.BaseActivity;
 import com.agora.netless.syncplayer.misc.Constant;
+import com.agora.netless.syncplayer.misc.EmptyPlayerListener;
 import com.agora.netless.syncplayer.misc.PlayerStateLayout;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
-import com.herewhite.sdk.AbstractPlayerEventListener;
 import com.herewhite.sdk.Player;
 import com.herewhite.sdk.WhiteSdk;
 import com.herewhite.sdk.WhiteSdkConfiguration;
@@ -40,22 +40,21 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
         WhiteSdk whiteSdk = new WhiteSdk(whiteboardView, this, new WhiteSdkConfiguration(Constant.SDK_APP_ID, true));
 
         PlayerConfiguration playerConfiguration = new PlayerConfiguration(Constant.ROOM_UUID, Constant.ROOM_TOKEN);
+        playerConfiguration.setRegion(Constant.REGION);
         playerConfiguration.setDuration(120000L);
 
-        whiteSdk.createPlayer(playerConfiguration, new AbstractPlayerEventListener() {
-                },
-                new Promise<Player>() {
-                    @Override
-                    public void then(Player player) {
-                        enableBtn();
-                        initPlayer(player);
-                    }
+        whiteSdk.createPlayer(playerConfiguration, new EmptyPlayerListener(), new Promise<Player>() {
+            @Override
+            public void then(Player player) {
+                enableBtn();
+                initPlayer(player);
+            }
 
-                    @Override
-                    public void catchEx(SDKError t) {
+            @Override
+            public void catchEx(SDKError t) {
 
-                    }
-                });
+            }
+        });
     }
 
     private void initPlayer(Player player) {
@@ -135,16 +134,14 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.button_play:
-                finalPlayer.play();
-                break;
-            case R.id.button_pause:
-                finalPlayer.pause();
-                break;
-            case R.id.button_reset:
-                finalPlayer.stop();
-                break;
+        int id = v.getId();
+        if (id == R.id.button_play) {
+            finalPlayer.play();
+        } else if (id == R.id.button_pause) {
+            finalPlayer.pause();
+        } else if (id == R.id.button_reset) {
+            finalPlayer.stop();
+            finalPlayer.seekTo(0);
         }
     }
 

@@ -13,7 +13,7 @@ class VideoPlayerView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr) {
-    var playerView: PlayerView
+    private var playerView: PlayerView
 
     init {
         val root = LayoutInflater.from(context).inflate(R.layout.video_player_layout, this)
@@ -25,7 +25,8 @@ class VideoPlayerView @JvmOverloads constructor(
         playerView.player = player
     }
 
-    fun getPlayer(): Player? {
-        return playerView.player
-    }
+    val player: Player?
+        get() {
+            return playerView.player
+        }
 }
