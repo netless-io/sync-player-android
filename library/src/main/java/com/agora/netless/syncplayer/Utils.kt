@@ -42,7 +42,7 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
     private var startPosition = 0L
     private var lastPlay = 0L
 
-    private val positionNotifier = PositionNotifier(handler, this)
+    private val positionNotifier = PositionNotifier(eventHandler, this)
 
     init {
         addPlayerListener(object : AtomPlayerListener {

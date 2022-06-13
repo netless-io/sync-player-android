@@ -33,7 +33,7 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
     private PlayerStateLayout playerStateLayout2;
     private PlayerStateLayout playerStateLayout3;
 
-    private ClusterPlayer finalPlayer;
+    private AtomPlayer finalPlayer;
 
     private SeekBar seekBar;
     private boolean isSeeking;
@@ -74,24 +74,25 @@ public class TriplePlayerActivity extends BaseActivity implements View.OnClickLi
         videoPlayer1.setPlayerContainer(playerContainer1);
         playerStateLayout1.attachPlayer(videoPlayer1);
 
-        AtomPlayer videoPlayer2 = SyncPlayer.selection(
-                new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]),
+        VideoPlayer videoPlayer2 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
+        videoPlayer2.setName("videoPlayer2");
+
+        AtomPlayer selectionPlayer = SyncPlayer.selection(videoPlayer2,
                 new SelectionOptions(Arrays.asList(
                         new Selection(5_000, 20_000),
                         new Selection(20_000, 120_000))
                 ));
-        videoPlayer2.setName("videoPlayer2");
-        videoPlayer2.setPlayerContainer(playerContainer2);
-        playerStateLayout2.attachPlayer(videoPlayer2);
+        selectionPlayer.setPlayerContainer(playerContainer2);
+        playerStateLayout2.attachPlayer(selectionPlayer);
 
-        ClusterPlayer combinePlayer = new ClusterPlayer(videoPlayer1, videoPlayer2);
-        combinePlayer.setName("combinePlayer");
+        ClusterPlayer combinePlayer = new ClusterPlayer(videoPlayer1, selectionPlayer);
+        combinePlayer.setName("combinePlayer1");
 
         WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
         whiteboardPlayer.setName("whiteboardPlayer");
         playerStateLayout3.attachPlayer(whiteboardPlayer);
 
-        finalPlayer = new ClusterPlayer(whiteboardPlayer, combinePlayer);
+        finalPlayer = SyncPlayer.combine(whiteboardPlayer, combinePlayer);
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {

@@ -1,6 +1,7 @@
 package com.agora.netless.syncplayer
 
 /**
+ * A factory class to create AtomPlayer
  *
  * @Experimental(level = Experimental.Level.WARNING)
  */

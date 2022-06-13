@@ -28,7 +28,7 @@ class VideoPlayer constructor(
         Util.getUserAgent(context, "SyncPlayer")
     )
 
-    private val positionNotifier = PositionNotifier(handler, this)
+    private val positionNotifier = PositionNotifier(eventHandler, this)
 
     private val interPlayerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) {
@@ -151,6 +151,7 @@ class VideoPlayer constructor(
 
     override fun release() {
         exoPlayer.release()
+        positionNotifier.stop()
     }
 
     override fun currentPosition(): Long {

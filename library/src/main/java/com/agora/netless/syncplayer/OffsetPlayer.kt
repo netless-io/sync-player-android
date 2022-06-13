@@ -1,11 +1,13 @@
 package com.agora.netless.syncplayer
 
+import android.view.View
 import android.view.ViewGroup
 
 class OffsetPlayer constructor(
     private val player: AtomPlayer,
     private val offset: Long,
 ) : AbstractAtomPlayer() {
+    private var container: ViewGroup? = null
     private val fakePlayer = FakePlayer(offset)
     private var nextPlaying = false
 
@@ -121,8 +123,6 @@ class OffsetPlayer constructor(
 
     override fun release() {
         player.release()
-        currentPhase = AtomPlayerPhase.End
-        targetPhase = AtomPlayerPhase.End
     }
 
     override fun seekToInternal(timeMs: Long) {
@@ -137,7 +137,7 @@ class OffsetPlayer constructor(
         if (!isPlaying) {
             return
         }
-        nextPlaying = position >= offset
+        updateNextPlaying(position >= offset)
         if (position >= offset) {
             fakePlayer.pause()
             player.play()
@@ -147,8 +147,13 @@ class OffsetPlayer constructor(
         }
     }
 
+    private fun updateNextPlaying(nextPlaying: Boolean) {
+        this.nextPlaying = nextPlaying
+        container?.visibility = if (nextPlaying) View.VISIBLE else View.INVISIBLE
+    }
+
     private fun playNext() {
-        nextPlaying = true
+        updateNextPlaying(true)
         player.seekTo(0)
         player.play()
     }
@@ -169,5 +174,7 @@ class OffsetPlayer constructor(
 
     override fun setPlayerContainer(container: ViewGroup) {
         player.setPlayerContainer(container)
+        this.container = container
+        this.container?.visibility = if (nextPlaying) View.VISIBLE else View.INVISIBLE
     }
 }

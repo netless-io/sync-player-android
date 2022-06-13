@@ -38,6 +38,9 @@ class WhiteboardPlayer(
             override fun onLoadFirstFrame() {
                 Log.d("[$name] whitePlayer onLoadFirstFrame")
                 eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
+                eventHandler.post {
+                    pauseInternal()
+                }
             }
 
             override fun onScheduleTimeChanged(time: Long) {
@@ -68,6 +71,7 @@ class WhiteboardPlayer(
         player.seekToScheduleTime(timeMs)
         notifyChanged {
             it.onSeekTo(this, timeMs = timeMs)
+            it.onPositionChanged(this, position = timeMs)
         }
     }
 

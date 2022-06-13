@@ -30,9 +30,9 @@ public class OffsetPlayerActivity extends BaseActivity implements View.OnClickLi
     private void initData() {
         VideoPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
         videoPlayer.setName("videoPlayer");
-        videoPlayer.setPlayerContainer(playerContainer);
 
-        finalPlayer = new OffsetPlayer(videoPlayer, 5000L);
+        finalPlayer = new OffsetPlayer(videoPlayer, 5_000L);
+        finalPlayer.setPlayerContainer(playerContainer);
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {

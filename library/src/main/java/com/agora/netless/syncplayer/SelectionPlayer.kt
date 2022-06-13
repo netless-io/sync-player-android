@@ -16,7 +16,7 @@ class SelectionPlayer(
     private val segOuter: List<Selection>
 
     // 正在播放的段
-    private var currentSelection = -1
+    private var currentSelection = 0
 
     init {
         var start = 0L
@@ -109,6 +109,9 @@ class SelectionPlayer(
     }
 
     private fun getOutFromIn(inPosition: Long): Long {
+        if (inPosition < segInter[0].start) {
+            return 0
+        }
         val first = segInter.indexOfFirst { inPosition < it.end }
         if (first != -1) {
             return segOuter[first].start + (inPosition - segInter[first].start)

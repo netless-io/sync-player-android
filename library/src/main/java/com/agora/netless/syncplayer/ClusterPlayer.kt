@@ -99,7 +99,7 @@ class ClusterPlayer constructor(
                         it.onPositionChanged(this@ClusterPlayer, this@ClusterPlayer.position)
                     }
                 }
-                if (this@ClusterPlayer.position > position + 1000) {
+                if (this@ClusterPlayer.position > position + 500) {
                     atomPlayer.seekTo(this@ClusterPlayer.position)
                 }
             }
@@ -154,7 +154,6 @@ class ClusterPlayer constructor(
                 position = targetPosition
                 notifyChanged {
                     it.onSeekTo(this@ClusterPlayer, timeMs = position)
-                    it.onPositionChanged(this@ClusterPlayer, position = position)
                 }
             }
         }
