@@ -1,4 +1,4 @@
-## SyncPlayer
+## SyncPlayer [![](https://jitpack.io/v/netless-io/sync-player-android.svg)](https://jitpack.io/#netless-io/sync-player-android)
 
 Plays multiple media(videos or whiteboards) at the same time with synchronized progress and speed.
 Stops when the longest media ended.
@@ -42,7 +42,7 @@ android {
 }
 
 dependencies {
-    implementation "com.github.netless-io:sync-player-android:<last-version>"
+    implementation "com.github.netless-io:sync-player-android:1.0.0-beta.1"
 }
 ```
 
@@ -87,8 +87,7 @@ class Example {
 }
 ```
 
-see
-example [OffsetPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/OffsetPlayerActivity.java)
+see example [OffsetPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/OffsetPlayerActivity.java)
 
 ### Selection Player
 
@@ -145,6 +144,7 @@ class Example {
 see example [WhiteSelectionClusterPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/WhiteSelectionClusterPlayerActivity.java)
 
 ## API
+
 All apis see [AtomPlayer](library/src/main/java/com/agora/netless/syncplayer/AtomPlayer.kt)
 
 ### play
