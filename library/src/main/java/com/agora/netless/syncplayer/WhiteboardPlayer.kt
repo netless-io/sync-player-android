@@ -38,7 +38,9 @@ class WhiteboardPlayer(
                 Log.d("[$name] whitePlayer onLoadFirstFrame")
                 eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
                 eventHandler.post {
-                    pauseInternal()
+                    if (targetPhase == AtomPlayerPhase.Ready) {
+                        pauseInternal()
+                    }
                 }
             }
 
