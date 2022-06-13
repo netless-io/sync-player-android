@@ -103,6 +103,13 @@ class OffsetPlayer constructor(
         }
     }
 
+    override var playbackSpeed = 1.0f
+        set(value) {
+            field = value
+            fakePlayer.playbackSpeed = value
+            player.playbackSpeed = value
+        }
+
     override fun prepareInternal() {
         player.prepare()
         fakePlayer.prepare()

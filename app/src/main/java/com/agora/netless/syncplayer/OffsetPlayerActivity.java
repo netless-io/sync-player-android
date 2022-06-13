@@ -44,6 +44,7 @@ public class OffsetPlayerActivity extends BaseActivity implements View.OnClickLi
             public void onPhaseChanged(@NonNull AtomPlayer atomPlayer, @NonNull AtomPlayerPhase phase) {
                 if (phase == AtomPlayerPhase.Ready) {
                     seekBar.setMax((int) atomPlayer.duration());
+                    finalPlayer.setPlaybackSpeed(3);
                 }
             }
 

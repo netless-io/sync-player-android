@@ -59,6 +59,8 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
         })
     }
 
+    override var playbackSpeed = 1.0f
+
     override fun prepareInternal() {
         updatePlayerPhase(AtomPlayerPhase.Ready)
     }
@@ -69,7 +71,7 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
     }
 
     override fun pauseInternal() {
-        startPosition += System.currentTimeMillis() - lastPlay
+        startPosition += duringTime()
         positionNotifier.stop()
     }
 
@@ -87,7 +89,7 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
 
     override fun currentPosition(): Long {
         return if (isPlaying) {
-            startPosition + System.currentTimeMillis() - lastPlay
+            startPosition + duringTime()
         } else {
             startPosition
         }
@@ -96,6 +98,8 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
     override fun duration(): Long {
         return duration
     }
+
+    private fun duringTime() = ((System.currentTimeMillis() - lastPlay) * playbackSpeed).toLong()
 }
 
 internal open class WhitePlayerListenerAdapter : PlayerListener {

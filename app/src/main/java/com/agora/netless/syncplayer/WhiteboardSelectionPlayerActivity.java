@@ -42,7 +42,7 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
 
         PlayerConfiguration playerConfiguration = new PlayerConfiguration(Constant.ROOM_UUID, Constant.ROOM_TOKEN);
         playerConfiguration.setRegion(Constant.REGION);
-        playerConfiguration.setDuration(120000L);
+        playerConfiguration.setDuration(120_000L);
 
         whiteSdk.createPlayer(playerConfiguration, new Promise<Player>() {
             @Override

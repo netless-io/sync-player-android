@@ -45,7 +45,7 @@ public class WhiteSelectionClusterPlayerActivity extends BaseActivity implements
 
         PlayerConfiguration playerConfiguration = new PlayerConfiguration(Constant.ROOM_UUID, Constant.ROOM_TOKEN);
         playerConfiguration.setRegion(Constant.REGION);
-        playerConfiguration.setDuration(120000L);
+        playerConfiguration.setDuration(720_000L);
 
         whiteSdk.createPlayer(playerConfiguration, new Promise<Player>() {
             @Override
@@ -72,7 +72,7 @@ public class WhiteSelectionClusterPlayerActivity extends BaseActivity implements
                         new Selection(5_000, 10_000),
                         new Selection(15_000, 20_000),
                         new Selection(30_000, 40_000),
-                        new Selection(60_000, 120_000)
+                        new Selection(60_000, 720_000L)
                 )
         ));
         playerStateLayout2.attachPlayer(selectionPlayer);
@@ -90,6 +90,7 @@ public class WhiteSelectionClusterPlayerActivity extends BaseActivity implements
             public void onPhaseChanged(@NonNull AtomPlayer atomPlayer, @NonNull AtomPlayerPhase phase) {
                 if (phase == AtomPlayerPhase.Playing) {
                     seekBar.setMax((int) atomPlayer.duration());
+                    finalPlayer.setPlaybackSpeed(3);
                 }
             }
 

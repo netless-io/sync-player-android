@@ -79,6 +79,12 @@ class SelectionPlayer(
         })
     }
 
+    override var playbackSpeed = 1.0f
+        set(value) {
+            field = value
+            atomPlayer.playbackSpeed = value
+        }
+
     override fun prepareInternal() {
         atomPlayer.prepare()
     }
