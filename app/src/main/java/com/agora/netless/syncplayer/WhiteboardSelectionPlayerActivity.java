@@ -60,7 +60,6 @@ public class WhiteboardSelectionPlayerActivity extends BaseActivity implements V
 
     private void initPlayer(Player player) {
         WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
-        whiteboardPlayer.setName("whiteboardPlayer");
 
         finalPlayer = new SelectionPlayer(whiteboardPlayer, new SelectionOptions(
                 Arrays.asList(

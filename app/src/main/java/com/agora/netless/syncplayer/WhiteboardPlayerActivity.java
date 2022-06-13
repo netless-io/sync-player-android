@@ -59,9 +59,6 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
 
     private void initPlayer(Player player) {
         finalPlayer = new WhiteboardPlayer(player);
-        finalPlayer.setName("whiteboardPlayer");
-
-        playerStateLayout.attachPlayer(finalPlayer);
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
@@ -82,6 +79,7 @@ public class WhiteboardPlayerActivity extends BaseActivity implements View.OnCli
 
             }
         });
+        playerStateLayout.attachPlayer(finalPlayer);
     }
 
     private void initView() {

@@ -33,7 +33,6 @@ public class SelectionPlayerActivity extends BaseActivity implements View.OnClic
 
     private void initData() {
         VideoPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
-        videoPlayer.setName("videoPlayer");
         videoPlayer.setPlayerContainer(playerContainer);
         // PlayerStateLayout attach internal player to display Selections IN.
         playerStateLayout.attachPlayer(videoPlayer);

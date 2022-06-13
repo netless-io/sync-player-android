@@ -29,7 +29,6 @@ public class VideoPlayerActivity extends BaseActivity implements View.OnClickLis
 
     private void initData() {
         finalPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
-        finalPlayer.setName("videoPlayer");
         finalPlayer.setPlayerContainer(playerContainer);
 
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
