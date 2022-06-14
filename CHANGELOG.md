@@ -1,5 +1,10 @@
 # Changelog
 
+## [Version 1.0.0] - 2021-06-14
+
+- Update `SyncPlayer.combine` to support grouping AtomPlayers.
+- Add `AtomPlayerBuilder` to create AtomPlayer with less temporary variable statement.
+
 ## [Version 1.0.0-beta.1] - 2021-06-13
 
 - Update `VideoPlayer`, `WhiteboardPlayer`, `OffsetPlayer`, `SelectionPlayer`.
