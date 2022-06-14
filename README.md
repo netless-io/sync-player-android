@@ -52,14 +52,16 @@ You may clone this repo and run the [app](./app).
 
 ### Basic
 
-see
 example [ClusterPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/ClusterPlayerActivity.java)
 
 ```java
 class Example {
     private void initPlayer() {
         VideoPlayer videoPlayer1 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
+        // Note: videoPlayer need a container to display
+        videoPlayer1.setPlayerContainer(playerContainer1);
         VideoPlayer videoPlayer2 = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
+        videoPlayer2.setPlayerContainer(playerContainer2);
 
         AtomPlayer finalPlayer = new ClusterPlayer(videoPlayer1, videoPlayer2);
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
@@ -69,7 +71,7 @@ class Example {
 }
 ```
 
-### Offset
+### OffsetPlayer
 
 You may add a time offset before any `AtomPlayer`:
 
@@ -77,7 +79,6 @@ You may add a time offset before any `AtomPlayer`:
 class Example {
     private void initPlayer() {
         VideoPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[0]);
-
         AtomPlayer finalPlayer = new OffsetPlayer(videoPlayer, 5000L);
 
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
@@ -87,9 +88,9 @@ class Example {
 }
 ```
 
-see example [OffsetPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/OffsetPlayerActivity.java)
+example [OffsetPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/OffsetPlayerActivity.java)
 
-### Selection Player
+### SelectionPlayer
 
 You may trim any `AtomPlayer` to selected parts by providing a selection list.
 
@@ -98,15 +99,15 @@ class Example {
     private void initPlayer() {
         VideoPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
 
-        AtomPlayer finalPlayer = new SelectionPlayer(videoPlayer, new SelectionOptions(
-                Arrays.asList(
+        AtomPlayer finalPlayer = new SelectionPlayer(
+                videoPlayer,
+                new SelectionOptions(Arrays.asList(
                         new Selection(5_000, 10_000),
                         new Selection(15_000, 20_000),
                         new Selection(30_000, 40_000),
-                        new Selection(60_000, 100_000)
+                        new Selection(60_000, 100_000))
                 )
-        ));
-
+        );
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
         });
         finalPlayer.play();
@@ -114,7 +115,7 @@ class Example {
 }
 ```
 
-see example [SelectionPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/SelectionPlayerActivity.java)
+example [SelectionPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/SelectionPlayerActivity.java)
 
 ### Sync With Netless Whiteboard
 
@@ -141,7 +142,8 @@ class Example {
 }
 ```
 
-see example [WhiteSelectionClusterPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/WhiteSelectionClusterPlayerActivity.java)
+see
+example [WhiteSelectionClusterPlayerActivity](app/src/main/java/com/agora/netless/syncplayer/WhiteSelectionClusterPlayerActivity.java)
 
 ## API
 
@@ -179,9 +181,14 @@ Duration(in millisecond) of the longest media.
 
 Player progress time(in millisecond).
 
+### setPlaybackSpeed
+
+Player playback speed.
+
 ### status
 
-Player status. see [AtomPlayer.AtomPlayerPhase](library/src/main/java/com/agora/netless/syncplayer/AtomPlayer.kt)
+Player status.
+see [AtomPlayer.AtomPlayerPhase](library/src/main/java/com/agora/netless/syncplayer/AtomPlayer.kt)
 
 - `Idle` Player init status or error status
 - `Ready` Player can play immediately.
@@ -189,3 +196,63 @@ Player status. see [AtomPlayer.AtomPlayerPhase](library/src/main/java/com/agora/
 - `Playing` Player is playing.
 - `Buffering` Player is buffering.
 - `Ended` Player ends.
+
+### SyncPlayer.combine
+
+A function create a AtomPlayer to play grouping AtomPlayers
+
+```java
+class Example {
+    private void code() {
+        AtomPlayer atomPlayer = SyncPlayer.combine(atomPlayer1, atomPlayer2, atomPlayer3,...);
+    }
+}
+```
+
+### AtomPlayerBuilder
+
+A builder create AtomPlayer for less temporary AtomPlayer statement.
+
+Note: here some constraints
+
+* AtomPlayerBuilder can only create one VideoPlayer or one WhiteboardPlayer once.
+* AtomPlayerBuilder only store one offset and one selection record.
+
+```java
+class Example {
+    private void createWithNewOperator(Player player) {
+        AtomPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
+        videoPlayer.setPlayerContainer(playerContainer);
+
+        WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
+        SelectionPlayer selectionPlayer = new SelectionPlayer(whiteboardPlayer,
+                new SelectionOptions(Arrays.asList(
+                        new Selection(5_000, 10_000),
+                        new Selection(15_000, 20_000),
+                        new Selection(30_000, 40_000),
+                        new Selection(60_000, 720_000)
+                )));
+
+        finalPlayer = SyncPlayer.combine(selectionPlayer, videoPlayer);
+    }
+
+    private void createWithAtomPlayerBuilder(Player player) {
+        AtomPlayer videoPlayer = new AtomPlayerBuilder()
+                .video(this, Constant.ALL_VIDEO_URL[1])
+                .setPlayerContainer(playerContainer)
+                .create();
+
+        AtomPlayer whiteboardPlayer = new AtomPlayerBuilder()
+                .whiteboard(player)
+                .selection(new SelectionOptions(Arrays.asList(
+                        new Selection(5_000, 10_000),
+                        new Selection(15_000, 20_000),
+                        new Selection(30_000, 40_000),
+                        new Selection(60_000, 720_000)
+                )))
+                .create();
+
+        finalPlayer = SyncPlayer.combine(whiteboardPlayer, videoPlayer);
+    }
+}
+```
