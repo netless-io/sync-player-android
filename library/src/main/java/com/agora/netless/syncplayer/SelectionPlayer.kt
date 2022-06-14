@@ -147,7 +147,7 @@ class SelectionPlayer(
     }
 }
 
-class SelectionOptions(val selections: List<Selection>)
+data class SelectionOptions(val selections: List<Selection>)
 
 data class Selection(val start: Long, val end: Long) {
     fun duration(): Long {

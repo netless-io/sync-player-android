@@ -20,8 +20,20 @@ class SyncPlayer {
         }
 
         @JvmStatic
-        fun combine(aPlayer: AtomPlayer, bPlayer: AtomPlayer): AtomPlayer {
-            return ClusterPlayer(aPlayer, bPlayer)
+        fun combine(vararg atomPlayers: AtomPlayer): AtomPlayer {
+            if (atomPlayers.isEmpty()) {
+                throw RuntimeException("atomPlayers should not be empty!")
+            }
+            val size = atomPlayers.size
+            if (size == 1) {
+                return atomPlayers[0]
+            } else if (size == 2) {
+                return ClusterPlayer(atomPlayers[0], atomPlayers[1])
+            }
+            val middle = size / 2
+            val partOne = combine(*atomPlayers.slice(0 until middle).toTypedArray())
+            val partTwo = combine(*atomPlayers.slice(middle until size).toTypedArray())
+            return combine(partOne, partTwo)
         }
     }
 }

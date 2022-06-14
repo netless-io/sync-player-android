@@ -62,22 +62,24 @@ public class WhiteSelectionClusterPlayerActivity extends BaseActivity implements
     }
 
     private void initPlayer(Player player) {
-        AtomPlayer videoPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
-        videoPlayer.setPlayerContainer(playerContainer);
+        AtomPlayer videoPlayer = new AtomPlayerBuilder()
+                .video(this, Constant.ALL_VIDEO_URL[1])
+                .setPlayerContainer(playerContainer)
+                .create();
         playerStateLayout1.attachPlayer(videoPlayer);
 
-        WhiteboardPlayer whiteboardPlayer = new WhiteboardPlayer(player);
-        AtomPlayer selectionPlayer = new SelectionPlayer(whiteboardPlayer, new SelectionOptions(
-                Arrays.asList(
+        AtomPlayer whiteboardPlayer = new AtomPlayerBuilder()
+                .whiteboard(player)
+                .selection(new SelectionOptions(Arrays.asList(
                         new Selection(5_000, 10_000),
                         new Selection(15_000, 20_000),
                         new Selection(30_000, 40_000),
-                        new Selection(60_000, 720_000L)
-                )
-        ));
-        playerStateLayout2.attachPlayer(selectionPlayer);
+                        new Selection(60_000, 720_000)
+                )))
+                .create();
+        playerStateLayout2.attachPlayer(whiteboardPlayer);
 
-        finalPlayer = SyncPlayer.combine(selectionPlayer, videoPlayer);
+        finalPlayer = SyncPlayer.combine(whiteboardPlayer, videoPlayer);
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
             @Override
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
@@ -90,7 +92,6 @@ public class WhiteSelectionClusterPlayerActivity extends BaseActivity implements
             public void onPhaseChanged(@NonNull AtomPlayer atomPlayer, @NonNull AtomPlayerPhase phase) {
                 if (phase == AtomPlayerPhase.Playing) {
                     seekBar.setMax((int) atomPlayer.duration());
-                    finalPlayer.setPlaybackSpeed(3);
                 }
             }
 
