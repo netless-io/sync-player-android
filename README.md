@@ -133,12 +133,11 @@ class Example {
                         new Selection(60_000, 120_000)
                 )
         ));
-        AtomPlayer finalPlayer = SyncPlayer.combine(selectionPlayer, videoPlayer);
+        AtomPlayer finalPlayer = new ClusterPlayer(selectionPlayer, videoPlayer);
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
         });
         finalPlayer.play();
     }
-
 }
 ```
 
