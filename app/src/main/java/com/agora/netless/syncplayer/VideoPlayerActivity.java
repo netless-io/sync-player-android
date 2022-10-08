@@ -1,6 +1,7 @@
 package com.agora.netless.syncplayer;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.SeekBar;
@@ -9,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.agora.netless.syncplayer.misc.BaseActivity;
-import com.agora.netless.syncplayer.misc.Constant;
 import com.agora.netless.syncplayer.misc.SeekBarChangeAdapter;
 
 public class VideoPlayerActivity extends BaseActivity implements View.OnClickListener {
@@ -28,7 +28,7 @@ public class VideoPlayerActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void initData() {
-        finalPlayer = new VideoPlayer(this, Constant.ALL_VIDEO_URL[1]);
+        finalPlayer = new VideoPlayer(this, "https://flat-storage.oss-cn-hangzhou.aliyuncs.com/agoraCloudRecording/b8bff14ed3df45969c0643f263c94a65/a82a52bdf34120c29a0ac4a8e8e65044_b8bff14e-d3df-4596-9c06-43f263c94a65__uid_s_24721__uid_e_av.m3u8");
         finalPlayer.setPlayerContainer(playerContainer);
 
         finalPlayer.addPlayerListener(new AtomPlayerListener() {
@@ -36,6 +36,7 @@ public class VideoPlayerActivity extends BaseActivity implements View.OnClickLis
             public void onPositionChanged(@NonNull AtomPlayer atomPlayer, long position) {
                 if (!isSeeking) {
                     seekBar.setProgress((int) position);
+                    Log.e("Aderan", "duration " + atomPlayer.duration() + "position " + position);
                 }
             }
 
