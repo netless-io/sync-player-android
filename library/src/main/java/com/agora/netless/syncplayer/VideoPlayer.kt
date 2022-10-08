@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.FrameLayout.LayoutParams
 import com.agora.netless.syncplayer.ui.VideoPlayerView
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -104,12 +103,7 @@ class VideoPlayer constructor(
         if (container !is FrameLayout) {
             throw IllegalArgumentException("videoPlayer container must be type of FrameLayout!")
         }
-        container.addView(
-            videoPlayerView, LayoutParams(
-                LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT
-            )
-        )
+        container.addView(videoPlayerView)
         videoPlayerView.setPlayer(exoPlayer)
     }
 

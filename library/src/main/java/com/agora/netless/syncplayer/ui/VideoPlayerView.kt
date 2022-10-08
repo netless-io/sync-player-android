@@ -16,8 +16,8 @@ class VideoPlayerView @JvmOverloads constructor(
     private var playerView: PlayerView
 
     init {
-        val root = LayoutInflater.from(context).inflate(R.layout.video_player_layout, this)
-        playerView = root.findViewById(R.id.player_view)
+        LayoutInflater.from(context).inflate(R.layout.video_player_layout, this)
+        playerView = findViewById(R.id.player_view)
     }
 
     fun setPlayer(player: Player) {
