@@ -2,6 +2,7 @@ package com.agora.netless.syncplayer
 
 import android.content.Context
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.agora.netless.syncplayer.ui.VideoPlayerView
@@ -13,14 +14,11 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 
-class VideoPlayer constructor(
-    context: Context,
+open class VideoPlayer constructor(
+    private val context: Context,
     private val videoUrl: String,
 ) : AbstractAtomPlayer() {
-    private lateinit var exoPlayer: SimpleExoPlayer
-    private val videoPlayerView: VideoPlayerView by lazy {
-        VideoPlayerView(context)
-    }
+    private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
 
     private var dataSourceFactory = DefaultDataSourceFactory(
         context,
@@ -87,7 +85,6 @@ class VideoPlayer constructor(
     }
 
     init {
-        exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
         exoPlayer.addListener(interPlayerListener)
         // disable handleAudioFocus to support multiple players
         exoPlayer.setAudioAttributes(AudioAttributes.DEFAULT, false)
@@ -103,8 +100,14 @@ class VideoPlayer constructor(
         if (container !is FrameLayout) {
             throw IllegalArgumentException("videoPlayer container must be type of FrameLayout!")
         }
-        container.addView(videoPlayerView)
-        videoPlayerView.setPlayer(exoPlayer)
+        container.addView(bindPlayer(exoPlayer))
+    }
+
+    open fun bindPlayer(player: Player): View {
+        val playerView = VideoPlayerView(context).apply {
+            setPlayer(exoPlayer)
+        }
+        return playerView
     }
 
     private fun createMediaSource(uri: Uri): MediaSource {
