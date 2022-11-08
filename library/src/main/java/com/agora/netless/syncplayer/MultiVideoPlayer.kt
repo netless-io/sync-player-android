@@ -2,6 +2,7 @@ package com.agora.netless.syncplayer
 
 import android.content.Context
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.agora.netless.syncplayer.ui.VideoPlayerView
@@ -20,22 +21,21 @@ class MultiVideoPlayer constructor(
     private val context: Context,
     private val videos: List<VideoItem>,
 ) : AbstractAtomPlayer() {
-    private var exoPlayer: SimpleExoPlayer =
-        SimpleExoPlayer.Builder(context.applicationContext).build()
-    private val videoPlayerView: VideoPlayerView by lazy {
-        VideoPlayerView(context)
-    }
-
-    private var dataSourceFactory = DefaultDataSourceFactory(
-        context,
-        Util.getUserAgent(context, "SyncPlayer")
-    )
+    private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
+    private var dataSourceFactory = DefaultDataSourceFactory(context, "SyncPlayer")
 
     private val positionNotifier = PositionNotifier(eventHandler, this)
+    private var fakePlayer = FakePlayer(0)
+    private var videoPlaying = videos[0].beginTime == 0L
+
+    private var currentSelection = 0
+    private val selections = videos.mapIndexed { index, videoItem ->
+        Selection((if (index != 0) videos[index - 1].endTime else 0), videoItem.endTime)
+    }
 
     private val interPlayerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) {
-            Log.d("[$name] interPlayer onPlaybackStateChanged $state")
+            Log.d("[$name] exoPlayer onPlaybackStateChanged $state")
 
             when (state) {
                 Player.STATE_IDLE -> {
@@ -45,18 +45,22 @@ class MultiVideoPlayer constructor(
                     eventHandler.obtainMessage(INTERNAL_BUFFERING).sendToTarget()
                 }
                 Player.STATE_READY -> {
-                    if (currentPhase == AtomPlayerPhase.Idle) {
-                        eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
-                    } else {
-                        if (exoPlayer.playWhenReady) {
-                            eventHandler.obtainMessage(INTERNAL_PLAYING).sendToTarget()
-                        } else {
-                            eventHandler.obtainMessage(INTERNAL_PAUSED).sendToTarget()
+                    when (currentPhase) {
+                        AtomPlayerPhase.Idle -> {
+                            eventHandler.obtainMessage(INTERNAL_READY).sendToTarget()
                         }
+                        AtomPlayerPhase.Buffering -> {
+                            if (exoPlayer.playWhenReady) {
+                                eventHandler.obtainMessage(INTERNAL_PLAYING).sendToTarget()
+                            } else {
+                                eventHandler.obtainMessage(INTERNAL_PAUSED).sendToTarget()
+                            }
+                        }
+                        else -> {}
                     }
                 }
                 Player.STATE_ENDED -> {
-                    eventHandler.obtainMessage(INTERNAL_END).sendToTarget()
+                    playNext()
                 }
             }
         }
@@ -80,8 +84,8 @@ class MultiVideoPlayer constructor(
             reason: Int
         ) {
             if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-                Log.d("[$name] interPlayer onSeekEnd: ${exoPlayer.currentPosition}")
-                val pos = exoPlayer.currentPosition
+                Log.d("[$name] exoPlayer position changed: ${exoPlayer.currentPosition}")
+                val pos = currentPosition()
                 notifyChanged {
                     it.onSeekTo(this@MultiVideoPlayer, pos)
                     it.onPositionChanged(this@MultiVideoPlayer, pos)
@@ -90,27 +94,192 @@ class MultiVideoPlayer constructor(
         }
     }
 
-    private var mediaSource: MediaSource? = null
-    private var currentPlaying: VideoItem? = null
-
     init {
+        addPlayerListener(object : AtomPlayerListener {
+            override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
+                if (currentSelection >= 0 && currentSelection < selections.size && videoPlaying) {
+                    if (position > selections[currentSelection].end) {
+                        playNext()
+                    }
+                }
+            }
+        })
         exoPlayer.addListener(interPlayerListener)
-        // disable handleAudioFocus to support multiple players
         exoPlayer.setAudioAttributes(AudioAttributes.DEFAULT, false)
         exoPlayer.playWhenReady = false
+
+        fakePlayer.addPlayerListener(object : AtomPlayerListener {
+            override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
+                if (currentSelection != -1) {
+                    val selection = selections[currentSelection]
+                    if (position < selection.duration()) {
+                        Log.d("[$name] fakePlayer onPositionChanged: $position, notify ${selection.start + position}")
+                        notifyChanged {
+                            it.onPositionChanged(this@MultiVideoPlayer, selection.start + position)
+                        }
+                    }
+                }
+            }
+
+            override fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
+                when (phaseChange) {
+                    AtomPlayerPhase.Idle -> {
+                    }
+                    AtomPlayerPhase.Ready -> {}
+                    AtomPlayerPhase.Paused -> {
+                        // if (targetPhase == AtomPlayerPhase.Paused) {
+                        //     updatePlayerPhase(AtomPlayerPhase.Paused)
+                        // }
+                    }
+                    AtomPlayerPhase.Playing -> {
+                        // updatePlayerPhase(AtomPlayerPhase.Playing)
+                    }
+                    AtomPlayerPhase.Buffering -> {
+                        updatePlayerPhase(AtomPlayerPhase.Buffering)
+                    }
+                    AtomPlayerPhase.End -> {
+                        playNext()
+                    }
+                }
+            }
+
+            override fun onSeekTo(atomPlayer: AtomPlayer, timeMs: Long) {
+                notifyChanged {
+                    it.onSeekTo(this@MultiVideoPlayer, timeMs)
+                }
+            }
+        })
+        fakePlayer.updateDuration(currentFakeDuration())
     }
 
-    /**
-     * 设置播放视图
-     *
-     * @param container 视图实例
-     */
     override fun setPlayerContainer(container: ViewGroup) {
         if (container !is FrameLayout) {
             throw IllegalArgumentException("videoPlayer container must be type of FrameLayout!")
         }
-        container.addView(videoPlayerView)
-        videoPlayerView.setPlayer(exoPlayer)
+        container.addView(bindPlayer(exoPlayer))
+    }
+
+    private fun bindPlayer(player: Player): View {
+        val playerView = VideoPlayerView(context).apply {
+            setPlayer(player)
+        }
+        return playerView
+    }
+
+    override fun seekToInternal(timeMs: Long) {
+        val index = selections.indexOfFirst { timeMs < it.end }
+        if (index != -1) {
+            if (index != currentSelection) {
+                currentSelection = index
+                fakePlayer.updateDuration(currentFakeDuration())
+                setVideoPath(videos[currentSelection].videoURL)
+            }
+            seekCurrentSelection(timeMs)
+        }
+    }
+
+    private fun seekCurrentSelection(timeMs: Long) {
+        videoPlaying = videos[currentSelection].beginTime < timeMs
+        if (videoPlaying) {
+            fakePlayer.pause()
+            exoPlayer.playWhenReady = true
+            exoPlayer.seekTo(currentPlayerPosition(timeMs))
+        } else {
+            exoPlayer.playWhenReady = false
+            fakePlayer.seekTo(currentFakePosition(timeMs))
+            fakePlayer.play()
+        }
+    }
+
+    private fun currentFakeDuration() =
+        videos[currentSelection].beginTime - selections[currentSelection].start
+
+    private fun currentFakePosition(timeMs: Long) = timeMs - selections[currentSelection].start
+
+    private fun currentPlayerPosition(timeMs: Long) = timeMs - videos[currentSelection].beginTime
+
+
+    override var playbackSpeed = 1.0f
+        set(value) {
+            field = value
+            exoPlayer.playbackParameters = PlaybackParameters(value)
+        }
+
+    override fun prepareInternal() {
+        setVideoPath(videos[0].videoURL)
+        exoPlayer.prepare()
+        fakePlayer.prepare()
+    }
+
+    override fun playInternal() {
+        if (videoPlaying) {
+            exoPlayer.playWhenReady = true
+        } else {
+            fakePlayer.play()
+        }
+    }
+
+    override fun pauseInternal() {
+        exoPlayer.playWhenReady = false
+        fakePlayer.pause()
+    }
+
+    override fun release() {
+        fakePlayer.release()
+        exoPlayer.release()
+        positionNotifier.stop()
+    }
+
+    override fun currentPosition(): Long {
+        if (!isInPlaybackState()) {
+            return 0
+        }
+        return if (validSelection()) {
+            if (isPlaying) {
+                videos[currentSelection].beginTime + exoPlayer.currentPosition
+            } else {
+                selections[currentSelection].start + fakePlayer.currentPosition()
+            }
+        } else {
+            duration()
+        }
+    }
+
+    private fun validSelection() = currentSelection >= 0 && currentSelection < videos.size
+
+    override fun duration(): Long {
+        if (isInPlaybackState()) {
+            return videos.last().endTime
+        }
+        return -1
+    }
+
+    private fun playNext() {
+        Log.d("[$name] play next called: $videoPlaying")
+        if (videoPlaying) {
+            // play next fake
+            currentSelection += 1
+            if (currentSelection < selections.size) {
+                exoPlayer.playWhenReady = false
+                // setVideoPath(videos[currentSelection].videoURL)
+
+                fakePlayer.updateDuration(currentFakeDuration())
+                fakePlayer.seekTo(0)
+                fakePlayer.play()
+            } else {
+                eventHandler.obtainMessage(INTERNAL_END).sendToTarget()
+            }
+        } else {
+            // play current video
+            setVideoPath(videos[currentSelection].videoURL)
+            exoPlayer.playWhenReady = true
+        }
+        videoPlaying = !videoPlaying
+    }
+
+    private fun setVideoPath(path: String) {
+        val mediaSource = createMediaSource(Uri.parse(path))
+        exoPlayer.setMediaSource(mediaSource)
     }
 
     private fun createMediaSource(uri: Uri): MediaSource {
@@ -123,81 +292,6 @@ class MultiVideoPlayer constructor(
                 .createMediaSource(MediaItem.fromUri(uri))
             else -> throw IllegalStateException("Unsupported type: $type")
         }
-    }
-
-    override fun seekToInternal(timeMs: Long) {
-        checkAndPlayTime(timeMs, true)
-    }
-
-    override var playbackSpeed = 1.0f
-        set(value) {
-            field = value
-            exoPlayer.playbackParameters = PlaybackParameters(value)
-        }
-
-    override fun prepareInternal() {
-        mediaSource = createMediaSource(Uri.parse(videos[0].videoURL))
-        exoPlayer.setMediaSource(mediaSource!!)
-        exoPlayer.prepare()
-    }
-
-    override fun playInternal() {
-        exoPlayer.playWhenReady = true
-    }
-
-    override fun pauseInternal() {
-        exoPlayer.playWhenReady = false
-    }
-
-    override fun release() {
-        exoPlayer.release()
-        positionNotifier.stop()
-    }
-
-    override fun currentPosition(): Long {
-        if (isInPlaybackState()) {
-            return (currentPlaying?.endTime ?: 0) + exoPlayer.currentPosition
-        }
-        return 0
-    }
-
-    override fun duration(): Long {
-        if (isInPlaybackState()) {
-            return videos.last().endTime
-        }
-        return -1
-    }
-
-    private fun checkAndPlayTime(timeMs: Long, seek: Boolean = false) {
-        val recordItem = getRecordItem(timeMs)
-        if (recordItem != null) {
-            if (recordItem == currentPlaying) {
-                if (seek) {
-                    exoPlayer.seekTo(timeMs - recordItem.beginTime)
-                }
-            } else {
-                currentPlaying = recordItem
-                setVideoPath(recordItem.videoURL)
-                exoPlayer.playWhenReady = true
-            }
-        } else {
-            currentPlaying = null
-            exoPlayer.playWhenReady = false
-        }
-    }
-
-    private fun getRecordItem(timeMs: Long): VideoItem? {
-        return videos.find { timeMs >= it.beginTime && timeMs < it.endTime }
-    }
-
-    /**
-     * 设置播放链接
-     *
-     * @param path 播放链接
-     */
-    private fun setVideoPath(path: String) {
-        mediaSource = createMediaSource(Uri.parse(path))
-        exoPlayer.setMediaSource(mediaSource!!)
     }
 }
 
