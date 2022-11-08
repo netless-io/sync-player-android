@@ -42,7 +42,7 @@ internal class PositionNotifier constructor(
 /**
  * 模拟空白播放，实现AtomPlayer
  */
-internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
+internal class FakePlayer(private var duration: Long) : AbstractAtomPlayer() {
     private var startPosition = 0L
     private var lastPlay = 0L
 
@@ -100,6 +100,10 @@ internal class FakePlayer(private val duration: Long) : AbstractAtomPlayer() {
     }
 
     private fun duringTime() = ((System.currentTimeMillis() - lastPlay) * playbackSpeed).toLong()
+
+    fun updateDuration(duration: Long) {
+        this.duration = duration
+    }
 }
 
 internal open class WhitePlayerListenerAdapter : PlayerListener {
