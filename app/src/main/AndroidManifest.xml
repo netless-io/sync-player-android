@@ -24,6 +24,10 @@
             android:exported="true" />
 
         <activity
+            android:name=".MultiVideoPlayerActivity"
+            android:exported="true" />
+
+        <activity
             android:name=".ClusterPlayerActivity"
             android:exported="true" />
 
@@ -44,5 +48,6 @@
             android:exported="true" />
         <activity android:name=".WhiteboardSelectionPlayerActivity" />
         <activity android:name=".WhiteSelectionClusterPlayerActivity" />
+        <activity android:name=".WhiteMultiVideoPlayerActivity" />
     </application>
 </manifest>

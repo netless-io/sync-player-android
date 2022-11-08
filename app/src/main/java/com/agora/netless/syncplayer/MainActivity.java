@@ -18,6 +18,8 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity {
     private final List<UseCase> ALL_USE_CASE = Arrays.asList(
+            new UseCase("Whiteboard + MultiVideoPlayer", "", WhiteMultiVideoPlayerActivity.class),
+            new UseCase("MultiVideoPlayerActivity", "", MultiVideoPlayerActivity.class),
             new UseCase("WhiteSelectionClusterPlayer", "", WhiteSelectionClusterPlayerActivity.class),
             new UseCase("TriplePlayer", "", TriplePlayerActivity.class),
             new UseCase("ClusterPlayer", "", ClusterPlayerActivity.class),
