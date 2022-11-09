@@ -21,17 +21,18 @@ class MultiVideoPlayer constructor(
     private val context: Context,
     private val videos: List<VideoItem>,
 ) : AbstractAtomPlayer() {
-    private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
-    private var dataSourceFactory = DefaultDataSourceFactory(context, "SyncPlayer")
-
-    private val positionNotifier = PositionNotifier(eventHandler, this)
-    private var fakePlayer = FakePlayer(0)
-    private var videoPlaying = videos[0].beginTime == 0L
-
-    private var currentSelection = 0
     private val selections = videos.mapIndexed { index, videoItem ->
         Selection((if (index != 0) videos[index - 1].endTime else 0), videoItem.endTime)
     }
+
+    private val positionNotifier = PositionNotifier(eventHandler, this)
+    private var exoPlayer = SimpleExoPlayer.Builder(context.applicationContext).build()
+    private var dataSourceFactory = DefaultDataSourceFactory(context, "SyncPlayer")
+
+    private var fakePlayer = FakePlayer(0)
+
+    private var videoPlaying = videos[0].beginTime == 0L
+    private var currentSelection = 0
 
     private val interPlayerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) {
@@ -123,23 +124,10 @@ class MultiVideoPlayer constructor(
 
             override fun onPhaseChanged(atomPlayer: AtomPlayer, phaseChange: AtomPlayerPhase) {
                 when (phaseChange) {
-                    AtomPlayerPhase.Idle -> {
-                    }
-                    AtomPlayerPhase.Ready -> {}
-                    AtomPlayerPhase.Paused -> {
-                        // if (targetPhase == AtomPlayerPhase.Paused) {
-                        //     updatePlayerPhase(AtomPlayerPhase.Paused)
-                        // }
-                    }
-                    AtomPlayerPhase.Playing -> {
-                        // updatePlayerPhase(AtomPlayerPhase.Playing)
-                    }
-                    AtomPlayerPhase.Buffering -> {
-                        updatePlayerPhase(AtomPlayerPhase.Buffering)
-                    }
                     AtomPlayerPhase.End -> {
                         playNext()
                     }
+                    else -> {}
                 }
             }
 
@@ -198,11 +186,11 @@ class MultiVideoPlayer constructor(
 
     private fun currentPlayerPosition(timeMs: Long) = timeMs - videos[currentSelection].beginTime
 
-
     override var playbackSpeed = 1.0f
         set(value) {
             field = value
             exoPlayer.playbackParameters = PlaybackParameters(value)
+            fakePlayer.playbackSpeed = value
         }
 
     override fun prepareInternal() {
