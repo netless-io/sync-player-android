@@ -1,5 +1,9 @@
 # Changelog
 
+## [Version 1.1.0] - 2021-11-09
+
+- Add `MultiVideoPlayer` to play multiple sequential videos
+
 ## [Version 1.0.0] - 2021-06-14
 
 - Update `SyncPlayer.combine` to support grouping AtomPlayers.
