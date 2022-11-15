@@ -4,7 +4,7 @@ import com.herewhite.sdk.Player
 import com.herewhite.sdk.domain.PlayerPhase
 
 class WhiteboardPlayer(
-    private val player: Player
+    private val player: Player,
 ) : AbstractAtomPlayer() {
 
     override var playbackSpeed = 1.0f
@@ -12,6 +12,8 @@ class WhiteboardPlayer(
             field = value
             player.playbackSpeed = value.toDouble()
         }
+
+    private var position: Long = 0
 
     init {
         val interPlayerListener = object : WhitePlayerListenerAdapter() {
@@ -46,6 +48,7 @@ class WhiteboardPlayer(
 
             override fun onScheduleTimeChanged(time: Long) {
                 // Log.d("[$name] interPlayer onScheduleTimeChanged $time")
+                position = time;
                 notifyChanged {
                     it.onPositionChanged(this@WhiteboardPlayer, time)
                 }
@@ -69,6 +72,7 @@ class WhiteboardPlayer(
     }
 
     override fun seekToInternal(timeMs: Long) {
+        position = timeMs
         player.seekToScheduleTime(timeMs)
         notifyChanged {
             it.onSeekTo(this, timeMs = timeMs)
@@ -82,7 +86,7 @@ class WhiteboardPlayer(
 
     override fun currentPosition(): Long {
         if (isInPlaybackState()) {
-            return player.playerTimeInfo.scheduleTime
+            return position
         }
         return 0
     }
