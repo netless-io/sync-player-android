@@ -4,6 +4,10 @@ class ClusterPlayer constructor(
     private val aPlayer: AtomPlayer,
     private val bPlayer: AtomPlayer,
 ) : AbstractAtomPlayer() {
+    companion object {
+        const val POSITION_SYNC_INTERVAL = 1000
+    }
+
     private var players: Array<AtomPlayer> = arrayOf(aPlayer, bPlayer)
     private var pauseReason: Array<Boolean> = arrayOf(false, false)
 
@@ -99,7 +103,7 @@ class ClusterPlayer constructor(
                         it.onPositionChanged(this@ClusterPlayer, this@ClusterPlayer.position)
                     }
                 }
-                if (this@ClusterPlayer.position > position + 500) {
+                if (this@ClusterPlayer.position > position + POSITION_SYNC_INTERVAL) {
                     atomPlayer.seekTo(this@ClusterPlayer.position)
                 }
             }
