@@ -98,7 +98,7 @@ class MultiVideoPlayer constructor(
     init {
         addPlayerListener(object : AtomPlayerListener {
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
-                if (currentSelection >= 0 && currentSelection < selections.size && videoPlaying) {
+                if (videoPlaying && validSelection()) {
                     if (position > selections[currentSelection].end) {
                         playNext()
                     }
@@ -111,7 +111,7 @@ class MultiVideoPlayer constructor(
 
         fakePlayer.addPlayerListener(object : AtomPlayerListener {
             override fun onPositionChanged(atomPlayer: AtomPlayer, position: Long) {
-                if (currentSelection != -1) {
+                if (validSelection()) {
                     val selection = selections[currentSelection]
                     if (position < selection.duration()) {
                         Log.d("[$name] fakePlayer onPositionChanged: $position, notify ${selection.start + position}")
