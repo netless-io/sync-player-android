@@ -42,7 +42,7 @@ android {
 }
 
 dependencies {
-    implementation "com.github.netless-io:sync-player-android:1.1.1"
+    implementation "com.github.netless-io:sync-player-android:1.2.0"
 }
 ```
 
