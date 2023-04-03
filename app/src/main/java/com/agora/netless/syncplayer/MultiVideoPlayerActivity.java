@@ -33,9 +33,9 @@ public class MultiVideoPlayerActivity extends BaseActivity implements View.OnCli
 
     private void initData() {
         List<VideoItem> items = Arrays.asList(
-                new VideoItem(5000, 10000, Constant.ALL_VIDEO_URL[0]),
-                new VideoItem(15000, 25000, Constant.ALL_VIDEO_URL[1]),
-                new VideoItem(30000, 40000, Constant.ALL_VIDEO_URL[0])
+                new VideoItem(5000, 60000, Constant.ALL_VIDEO_URL[0])
+                // new VideoItem(15000, 25000, Constant.ALL_VIDEO_URL[1]),
+                // new VideoItem(30000, 40000, Constant.ALL_VIDEO_URL[0])
         );
         finalPlayer = new MultiVideoPlayer(this, items);
         finalPlayer.setPlayerContainer(playerContainer);
@@ -53,6 +53,10 @@ public class MultiVideoPlayerActivity extends BaseActivity implements View.OnCli
             public void onPhaseChanged(@NonNull AtomPlayer atomPlayer, @NonNull AtomPlayerPhase phase) {
                 if (phase == AtomPlayerPhase.Ready) {
                     seekBar.setMax((int) atomPlayer.duration());
+                }
+                if (phase == AtomPlayerPhase.End) {
+                    finalPlayer.pause();
+                    finalPlayer.seekTo(0);
                 }
             }
 

@@ -7,7 +7,7 @@ package com.agora.netless.syncplayer
  */
 class SyncPlayer {
     companion object {
-        const val VERSION = "1.2.0"
+        const val VERSION = "1.2.1"
 
         @JvmStatic
         fun offset(atomPlayer: AtomPlayer, offset: Long): AtomPlayer {
