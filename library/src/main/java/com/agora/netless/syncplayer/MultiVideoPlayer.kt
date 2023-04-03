@@ -246,11 +246,10 @@ class MultiVideoPlayer constructor(
         Log.d("[$name] play next called: $videoPlaying")
         if (videoPlaying) {
             // play next fake
-            currentSelection += 1
-            if (currentSelection < selections.size) {
+            if (currentSelection + 1 < selections.size) {
                 exoPlayer.playWhenReady = false
-                // setVideoPath(videos[currentSelection].videoURL)
 
+                currentSelection += 1
                 fakePlayer.updateDuration(currentFakeDuration())
                 fakePlayer.seekTo(0)
                 fakePlayer.play()
